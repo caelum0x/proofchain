@@ -1,68 +1,94 @@
 import type { Abi } from "viem";
 
+// ---------------------------------------------------------------------------
+// Raw ABI JSON imports (one per deployed contract, 117 total). Generated from
+// the `@proofchain/contracts` Foundry build via `export-abis.mjs`.
+// ---------------------------------------------------------------------------
+
+// core / infrastructure
 import AddressBookJson from "./AddressBook.json";
-import ArbiterStakingJson from "./ArbiterStaking.json";
-import AttestationRegistryJson from "./AttestationRegistry.json";
-import AuctionHouseJson from "./AuctionHouse.json";
-import BatchMetadataStoreJson from "./BatchMetadataStore.json";
-import BatchNFTJson from "./BatchNFT.json";
-import BidManagerJson from "./BidManager.json";
-import BuyerRegistryJson from "./BuyerRegistry.json";
-import CarbonCreditTokenJson from "./CarbonCreditToken.json";
-import CarrierRegistryJson from "./CarrierRegistry.json";
-import CheckpointOracleJson from "./CheckpointOracle.json";
-import ClaimsProcessorJson from "./ClaimsProcessor.json";
-import DiscountCalculatorJson from "./DiscountCalculator.json";
-import DisputeArbitrationJson from "./DisputeArbitration.json";
-import EmissionsControllerJson from "./EmissionsController.json";
-import ESGRegistryJson from "./ESGRegistry.json";
-import EscrowFactoryJson from "./EscrowFactory.json";
-import FeeManagerJson from "./FeeManager.json";
-import FinancingMarketplaceJson from "./FinancingMarketplace.json";
-import FinancingPoolJson from "./FinancingPool.json";
-import GovernanceTokenJson from "./GovernanceToken.json";
-import IdentityResolverJson from "./IdentityResolver.json";
-import InsurancePoolJson from "./InsurancePool.json";
-import InvoiceFinancingJson from "./InvoiceFinancing.json";
-import InvoiceNFTJson from "./InvoiceNFT.json";
-import KYCRegistryJson from "./KYCRegistry.json";
-import LenderVaultJson from "./LenderVault.json";
-import ListingRegistryJson from "./ListingRegistry.json";
-import LoyaltyPointsJson from "./LoyaltyPoints.json";
-import MockUsdcJson from "./MockUSDC.json";
-import OffsetMarketplaceJson from "./OffsetMarketplace.json";
-import OrderBookJson from "./OrderBook.json";
-import OrganizationRegistryJson from "./OrganizationRegistry.json";
-import PauserJson from "./Pauser.json";
-import PaymentRouterJson from "./PaymentRouter.json";
-import PolicyManagerJson from "./PolicyManager.json";
-import PremiumCalculatorJson from "./PremiumCalculator.json";
-import ProofChainGovernorJson from "./ProofChainGovernor.json";
-import ProofChainTimelockJson from "./ProofChainTimelock.json";
-import ProposalRegistryJson from "./ProposalRegistry.json";
-import ProvenanceFactoryJson from "./ProvenanceFactory.json";
+
+// provenance
 import ProvenanceRegistryJson from "./ProvenanceRegistry.json";
-import ReceivableRegistryJson from "./ReceivableRegistry.json";
-import ReferralProgramJson from "./ReferralProgram.json";
-import RepaymentControllerJson from "./RepaymentController.json";
-import ReputationEngineJson from "./ReputationEngine.json";
-import RewardsDistributorJson from "./RewardsDistributor.json";
-import RiskPoolJson from "./RiskPool.json";
-import ScoreOracleJson from "./ScoreOracle.json";
-import SettlementEscrowJson from "./SettlementEscrow.json";
-import SettlementRouterJson from "./SettlementRouter.json";
-import SlashingControllerJson from "./SlashingController.json";
-import StablecoinRegistryJson from "./StablecoinRegistry.json";
-import StakeManagerJson from "./StakeManager.json";
-import StakingRewardsJson from "./StakingRewards.json";
-import SupplierBondJson from "./SupplierBond.json";
+import ProvenanceFactoryJson from "./ProvenanceFactory.json";
+import AttestationRegistryJson from "./AttestationRegistry.json";
+import BatchNFTJson from "./BatchNFT.json";
+import BatchMetadataStoreJson from "./BatchMetadataStore.json";
+import CheckpointOracleJson from "./CheckpointOracle.json";
+
+// identity
+import OrganizationRegistryJson from "./OrganizationRegistry.json";
+import IdentityResolverJson from "./IdentityResolver.json";
 import SupplierRegistryJson from "./SupplierRegistry.json";
-import SustainabilityOracleJson from "./SustainabilityOracle.json";
-import TreasuryJson from "./Treasury.json";
-import WarehouseReceiptJson from "./WarehouseReceipt.json";
+import BuyerRegistryJson from "./BuyerRegistry.json";
+import CarrierRegistryJson from "./CarrierRegistry.json";
+import KYCRegistryJson from "./KYCRegistry.json";
+
+// reputation
+import ReputationEngineJson from "./ReputationEngine.json";
+import ScoreOracleJson from "./ScoreOracle.json";
+import SupplierBondJson from "./SupplierBond.json";
+import ArbiterStakingJson from "./ArbiterStaking.json";
+import StakeManagerJson from "./StakeManager.json";
+import SlashingControllerJson from "./SlashingController.json";
+
+// finance
+import ReceivableRegistryJson from "./ReceivableRegistry.json";
+import InvoiceNFTJson from "./InvoiceNFT.json";
+import InvoiceFinancingJson from "./InvoiceFinancing.json";
+import FinancingPoolJson from "./FinancingPool.json";
+import LenderVaultJson from "./LenderVault.json";
+import RepaymentControllerJson from "./RepaymentController.json";
+import DiscountCalculatorJson from "./DiscountCalculator.json";
 import YieldDistributorJson from "./YieldDistributor.json";
 
-// Wave A: real-world trade domains
+// payments
+import SettlementEscrowJson from "./SettlementEscrow.json";
+import SettlementRouterJson from "./SettlementRouter.json";
+import EscrowFactoryJson from "./EscrowFactory.json";
+import PaymentRouterJson from "./PaymentRouter.json";
+import StablecoinRegistryJson from "./StablecoinRegistry.json";
+import FeeManagerJson from "./FeeManager.json";
+import MockUSDCJson from "./MockUSDC.json";
+
+// insurance
+import PolicyManagerJson from "./PolicyManager.json";
+import ClaimsProcessorJson from "./ClaimsProcessor.json";
+import InsurancePoolJson from "./InsurancePool.json";
+import PremiumCalculatorJson from "./PremiumCalculator.json";
+import RiskPoolJson from "./RiskPool.json";
+
+// governance
+import ProofChainGovernorJson from "./ProofChainGovernor.json";
+import ProofChainTimelockJson from "./ProofChainTimelock.json";
+import GovernanceTokenJson from "./GovernanceToken.json";
+import ProposalRegistryJson from "./ProposalRegistry.json";
+import DisputeArbitrationJson from "./DisputeArbitration.json";
+import PauserJson from "./Pauser.json";
+import TreasuryJson from "./Treasury.json";
+
+// esg
+import ESGRegistryJson from "./ESGRegistry.json";
+import CarbonCreditTokenJson from "./CarbonCreditToken.json";
+import SustainabilityOracleJson from "./SustainabilityOracle.json";
+import EmissionsControllerJson from "./EmissionsController.json";
+import OffsetMarketplaceJson from "./OffsetMarketplace.json";
+import WarehouseReceiptJson from "./WarehouseReceipt.json";
+
+// marketplace
+import ListingRegistryJson from "./ListingRegistry.json";
+import AuctionHouseJson from "./AuctionHouse.json";
+import OrderBookJson from "./OrderBook.json";
+import BidManagerJson from "./BidManager.json";
+import FinancingMarketplaceJson from "./FinancingMarketplace.json";
+
+// rewards
+import RewardsDistributorJson from "./RewardsDistributor.json";
+import LoyaltyPointsJson from "./LoyaltyPoints.json";
+import ReferralProgramJson from "./ReferralProgram.json";
+import StakingRewardsJson from "./StakingRewards.json";
+
+// tradefinance
 import LetterOfCreditJson from "./LetterOfCredit.json";
 import BillOfExchangeJson from "./BillOfExchange.json";
 import FactoringAgreementJson from "./FactoringAgreement.json";
@@ -73,6 +99,8 @@ import ReceivableSecuritizationJson from "./ReceivableSecuritization.json";
 import TrancheTokenJson from "./TrancheToken.json";
 import CreditLineManagerJson from "./CreditLineManager.json";
 import GuaranteeRegistryJson from "./GuaranteeRegistry.json";
+
+// compliance
 import SanctionsScreeningJson from "./SanctionsScreening.json";
 import AMLRegistryJson from "./AMLRegistry.json";
 import TradeComplianceEngineJson from "./TradeComplianceEngine.json";
@@ -83,6 +111,8 @@ import ProductRecallRegistryJson from "./ProductRecallRegistry.json";
 import ExportLicenseRegistryJson from "./ExportLicenseRegistry.json";
 import DutyAndTariffCalculatorJson from "./DutyAndTariffCalculator.json";
 import CustomsDeclarationJson from "./CustomsDeclaration.json";
+
+// dpp
 import DigitalProductPassportJson from "./DigitalProductPassport.json";
 import DPPLifecycleRegistryJson from "./DPPLifecycleRegistry.json";
 import MaterialCompositionJson from "./MaterialComposition.json";
@@ -90,6 +120,8 @@ import RepairabilityIndexJson from "./RepairabilityIndex.json";
 import RecyclingRegistryJson from "./RecyclingRegistry.json";
 import DPPDataCarrierJson from "./DPPDataCarrier.json";
 import DPPComplianceOracleJson from "./DPPComplianceOracle.json";
+
+// logistics
 import FreightBookingJson from "./FreightBooking.json";
 import ColdChainMonitorJson from "./ColdChainMonitor.json";
 import BondedWarehouseJson from "./BondedWarehouse.json";
@@ -98,22 +130,30 @@ import RouteAttestationJson from "./RouteAttestation.json";
 import CustomsBondedJson from "./CustomsBonded.json";
 import ContainerRegistryJson from "./ContainerRegistry.json";
 import LastMileProofOfDeliveryJson from "./LastMileProofOfDelivery.json";
+
+// commodities
 import CommodityTokenJson from "./CommodityToken.json";
 import CommodityVaultJson from "./CommodityVault.json";
 import HarvestRegistryJson from "./HarvestRegistry.json";
 import GradingRegistryJson from "./GradingRegistry.json";
 import StorageReceiptJson from "./StorageReceipt.json";
 import PriceOracleJson from "./PriceOracle.json";
+
+// energy
 import RenewableEnergyCertificateJson from "./RenewableEnergyCertificate.json";
 import EmissionsTradingJson from "./EmissionsTrading.json";
 import WaterCreditJson from "./WaterCredit.json";
 import BiodiversityCreditJson from "./BiodiversityCredit.json";
 import GreenBondIssuerJson from "./GreenBondIssuer.json";
+
+// workforce
 import WorkerCredentialJson from "./WorkerCredential.json";
 import SafetyTrainingRegistryJson from "./SafetyTrainingRegistry.json";
 import MilestonePayrollJson from "./MilestonePayroll.json";
 import SkillAttestationJson from "./SkillAttestation.json";
 import LaborComplianceRegistryJson from "./LaborComplianceRegistry.json";
+
+// data
 import IoTSensorRegistryJson from "./IoTSensorRegistry.json";
 import QualityInspectionJson from "./QualityInspection.json";
 import LabTestAttestationJson from "./LabTestAttestation.json";
@@ -121,83 +161,85 @@ import OracleAggregatorJson from "./OracleAggregator.json";
 import DataMarketplaceJson from "./DataMarketplace.json";
 
 /**
- * The full set of ProofChain contract ABIs.
- *
- * These JSON files are the authoritative ABIs exported from the
- * `@proofchain/contracts` Foundry build (`export-abis.mjs`). They are re-exported
- * here through the generic `Abi` type so downstream code (agent, api, web) keeps
- * working across contract recompiles. No addresses or secrets live in this layer.
- *
- * The map covers every deployed contract in `deployments/base-sepolia.json`:
- * the original core four (Provenance/Attestation/Settlement/MockUSDC) plus the
- * ~57 platform-expansion contracts across identity, reputation, finance,
- * insurance, governance, ESG, marketplace, and rewards.
+ * Canonical contract names used as keys across the shared package. Grouped by
+ * domain; the ordering is stable and every name has a matching ABI JSON file and
+ * an entry in {@link ABIS}, {@link CONTRACT_ABIS}, and the per-contract
+ * `<Name>Abi` const exports below.
  */
-
-/** Canonical contract names used as keys across the shared package. */
 export const CONTRACT_NAMES = [
+  // core / infrastructure
   "AddressBook",
-  "ArbiterStaking",
-  "AttestationRegistry",
-  "AuctionHouse",
-  "BatchMetadataStore",
-  "BatchNFT",
-  "BidManager",
-  "BuyerRegistry",
-  "CarbonCreditToken",
-  "CarrierRegistry",
-  "CheckpointOracle",
-  "ClaimsProcessor",
-  "DiscountCalculator",
-  "DisputeArbitration",
-  "EmissionsController",
-  "ESGRegistry",
-  "EscrowFactory",
-  "FeeManager",
-  "FinancingMarketplace",
-  "FinancingPool",
-  "GovernanceToken",
-  "IdentityResolver",
-  "InsurancePool",
-  "InvoiceFinancing",
-  "InvoiceNFT",
-  "KYCRegistry",
-  "LenderVault",
-  "ListingRegistry",
-  "LoyaltyPoints",
-  "MockUSDC",
-  "OffsetMarketplace",
-  "OrderBook",
-  "OrganizationRegistry",
-  "Pauser",
-  "PaymentRouter",
-  "PolicyManager",
-  "PremiumCalculator",
-  "ProofChainGovernor",
-  "ProofChainTimelock",
-  "ProposalRegistry",
-  "ProvenanceFactory",
+  // provenance
   "ProvenanceRegistry",
-  "ReceivableRegistry",
-  "ReferralProgram",
-  "RepaymentController",
+  "ProvenanceFactory",
+  "AttestationRegistry",
+  "BatchNFT",
+  "BatchMetadataStore",
+  "CheckpointOracle",
+  // identity
+  "OrganizationRegistry",
+  "IdentityResolver",
+  "SupplierRegistry",
+  "BuyerRegistry",
+  "CarrierRegistry",
+  "KYCRegistry",
+  // reputation
   "ReputationEngine",
-  "RewardsDistributor",
-  "RiskPool",
   "ScoreOracle",
+  "SupplierBond",
+  "ArbiterStaking",
+  "StakeManager",
+  "SlashingController",
+  // finance
+  "ReceivableRegistry",
+  "InvoiceNFT",
+  "InvoiceFinancing",
+  "FinancingPool",
+  "LenderVault",
+  "RepaymentController",
+  "DiscountCalculator",
+  "YieldDistributor",
+  // payments
   "SettlementEscrow",
   "SettlementRouter",
-  "SlashingController",
+  "EscrowFactory",
+  "PaymentRouter",
   "StablecoinRegistry",
-  "StakeManager",
-  "StakingRewards",
-  "SupplierBond",
-  "SupplierRegistry",
-  "SustainabilityOracle",
+  "FeeManager",
+  "MockUSDC",
+  // insurance
+  "PolicyManager",
+  "ClaimsProcessor",
+  "InsurancePool",
+  "PremiumCalculator",
+  "RiskPool",
+  // governance
+  "ProofChainGovernor",
+  "ProofChainTimelock",
+  "GovernanceToken",
+  "ProposalRegistry",
+  "DisputeArbitration",
+  "Pauser",
   "Treasury",
+  // esg
+  "ESGRegistry",
+  "CarbonCreditToken",
+  "SustainabilityOracle",
+  "EmissionsController",
+  "OffsetMarketplace",
   "WarehouseReceipt",
-  "YieldDistributor",
-  // Wave A
+  // marketplace
+  "ListingRegistry",
+  "AuctionHouse",
+  "OrderBook",
+  "BidManager",
+  "FinancingMarketplace",
+  // rewards
+  "RewardsDistributor",
+  "LoyaltyPoints",
+  "ReferralProgram",
+  "StakingRewards",
+  // tradefinance
   "LetterOfCredit",
   "BillOfExchange",
   "FactoringAgreement",
@@ -208,6 +250,7 @@ export const CONTRACT_NAMES = [
   "TrancheToken",
   "CreditLineManager",
   "GuaranteeRegistry",
+  // compliance
   "SanctionsScreening",
   "AMLRegistry",
   "TradeComplianceEngine",
@@ -218,6 +261,7 @@ export const CONTRACT_NAMES = [
   "ExportLicenseRegistry",
   "DutyAndTariffCalculator",
   "CustomsDeclaration",
+  // dpp
   "DigitalProductPassport",
   "DPPLifecycleRegistry",
   "MaterialComposition",
@@ -225,6 +269,7 @@ export const CONTRACT_NAMES = [
   "RecyclingRegistry",
   "DPPDataCarrier",
   "DPPComplianceOracle",
+  // logistics
   "FreightBooking",
   "ColdChainMonitor",
   "BondedWarehouse",
@@ -233,22 +278,26 @@ export const CONTRACT_NAMES = [
   "CustomsBonded",
   "ContainerRegistry",
   "LastMileProofOfDelivery",
+  // commodities
   "CommodityToken",
   "CommodityVault",
   "HarvestRegistry",
   "GradingRegistry",
   "StorageReceipt",
   "PriceOracle",
+  // energy
   "RenewableEnergyCertificate",
   "EmissionsTrading",
   "WaterCredit",
   "BiodiversityCredit",
   "GreenBondIssuer",
+  // workforce
   "WorkerCredential",
   "SafetyTrainingRegistry",
   "MilestonePayroll",
   "SkillAttestation",
   "LaborComplianceRegistry",
+  // data
   "IoTSensorRegistry",
   "QualityInspection",
   "LabTestAttestation",
@@ -258,134 +307,317 @@ export const CONTRACT_NAMES = [
 
 export type ContractName = (typeof CONTRACT_NAMES)[number];
 
+// ---------------------------------------------------------------------------
+// Per-contract typed ABI consts. Each is the authoritative, immutable ABI for
+// one contract, typed as viem's `Abi`. Exported individually (grouped by
+// domain) so consumers can `import { SettlementEscrowAbi } from "@proofchain/shared"`
+// and also collected into {@link CONTRACT_ABIS} / {@link ABIS} below.
+// ---------------------------------------------------------------------------
+
+// core / infrastructure
+export const AddressBookAbi: Abi = AddressBookJson as Abi;
+
+// provenance
+export const ProvenanceRegistryAbi: Abi = ProvenanceRegistryJson as Abi;
+export const ProvenanceFactoryAbi: Abi = ProvenanceFactoryJson as Abi;
+export const AttestationRegistryAbi: Abi = AttestationRegistryJson as Abi;
+export const BatchNFTAbi: Abi = BatchNFTJson as Abi;
+export const BatchMetadataStoreAbi: Abi = BatchMetadataStoreJson as Abi;
+export const CheckpointOracleAbi: Abi = CheckpointOracleJson as Abi;
+
+// identity
+export const OrganizationRegistryAbi: Abi = OrganizationRegistryJson as Abi;
+export const IdentityResolverAbi: Abi = IdentityResolverJson as Abi;
+export const SupplierRegistryAbi: Abi = SupplierRegistryJson as Abi;
+export const BuyerRegistryAbi: Abi = BuyerRegistryJson as Abi;
+export const CarrierRegistryAbi: Abi = CarrierRegistryJson as Abi;
+export const KYCRegistryAbi: Abi = KYCRegistryJson as Abi;
+
+// reputation
+export const ReputationEngineAbi: Abi = ReputationEngineJson as Abi;
+export const ScoreOracleAbi: Abi = ScoreOracleJson as Abi;
+export const SupplierBondAbi: Abi = SupplierBondJson as Abi;
+export const ArbiterStakingAbi: Abi = ArbiterStakingJson as Abi;
+export const StakeManagerAbi: Abi = StakeManagerJson as Abi;
+export const SlashingControllerAbi: Abi = SlashingControllerJson as Abi;
+
+// finance
+export const ReceivableRegistryAbi: Abi = ReceivableRegistryJson as Abi;
+export const InvoiceNFTAbi: Abi = InvoiceNFTJson as Abi;
+export const InvoiceFinancingAbi: Abi = InvoiceFinancingJson as Abi;
+export const FinancingPoolAbi: Abi = FinancingPoolJson as Abi;
+export const LenderVaultAbi: Abi = LenderVaultJson as Abi;
+export const RepaymentControllerAbi: Abi = RepaymentControllerJson as Abi;
+export const DiscountCalculatorAbi: Abi = DiscountCalculatorJson as Abi;
+export const YieldDistributorAbi: Abi = YieldDistributorJson as Abi;
+
+// payments
+export const SettlementEscrowAbi: Abi = SettlementEscrowJson as Abi;
+export const SettlementRouterAbi: Abi = SettlementRouterJson as Abi;
+export const EscrowFactoryAbi: Abi = EscrowFactoryJson as Abi;
+export const PaymentRouterAbi: Abi = PaymentRouterJson as Abi;
+export const StablecoinRegistryAbi: Abi = StablecoinRegistryJson as Abi;
+export const FeeManagerAbi: Abi = FeeManagerJson as Abi;
+export const MockUSDCAbi: Abi = MockUSDCJson as Abi;
+
+// insurance
+export const PolicyManagerAbi: Abi = PolicyManagerJson as Abi;
+export const ClaimsProcessorAbi: Abi = ClaimsProcessorJson as Abi;
+export const InsurancePoolAbi: Abi = InsurancePoolJson as Abi;
+export const PremiumCalculatorAbi: Abi = PremiumCalculatorJson as Abi;
+export const RiskPoolAbi: Abi = RiskPoolJson as Abi;
+
+// governance
+export const ProofChainGovernorAbi: Abi = ProofChainGovernorJson as Abi;
+export const ProofChainTimelockAbi: Abi = ProofChainTimelockJson as Abi;
+export const GovernanceTokenAbi: Abi = GovernanceTokenJson as Abi;
+export const ProposalRegistryAbi: Abi = ProposalRegistryJson as Abi;
+export const DisputeArbitrationAbi: Abi = DisputeArbitrationJson as Abi;
+export const PauserAbi: Abi = PauserJson as Abi;
+export const TreasuryAbi: Abi = TreasuryJson as Abi;
+
+// esg
+export const ESGRegistryAbi: Abi = ESGRegistryJson as Abi;
+export const CarbonCreditTokenAbi: Abi = CarbonCreditTokenJson as Abi;
+export const SustainabilityOracleAbi: Abi = SustainabilityOracleJson as Abi;
+export const EmissionsControllerAbi: Abi = EmissionsControllerJson as Abi;
+export const OffsetMarketplaceAbi: Abi = OffsetMarketplaceJson as Abi;
+export const WarehouseReceiptAbi: Abi = WarehouseReceiptJson as Abi;
+
+// marketplace
+export const ListingRegistryAbi: Abi = ListingRegistryJson as Abi;
+export const AuctionHouseAbi: Abi = AuctionHouseJson as Abi;
+export const OrderBookAbi: Abi = OrderBookJson as Abi;
+export const BidManagerAbi: Abi = BidManagerJson as Abi;
+export const FinancingMarketplaceAbi: Abi = FinancingMarketplaceJson as Abi;
+
+// rewards
+export const RewardsDistributorAbi: Abi = RewardsDistributorJson as Abi;
+export const LoyaltyPointsAbi: Abi = LoyaltyPointsJson as Abi;
+export const ReferralProgramAbi: Abi = ReferralProgramJson as Abi;
+export const StakingRewardsAbi: Abi = StakingRewardsJson as Abi;
+
+// tradefinance
+export const LetterOfCreditAbi: Abi = LetterOfCreditJson as Abi;
+export const BillOfExchangeAbi: Abi = BillOfExchangeJson as Abi;
+export const FactoringAgreementAbi: Abi = FactoringAgreementJson as Abi;
+export const PurchaseOrderFinancingAbi: Abi = PurchaseOrderFinancingJson as Abi;
+export const DynamicDiscountingAbi: Abi = DynamicDiscountingJson as Abi;
+export const SupplyChainFinanceAbi: Abi = SupplyChainFinanceJson as Abi;
+export const ReceivableSecuritizationAbi: Abi = ReceivableSecuritizationJson as Abi;
+export const TrancheTokenAbi: Abi = TrancheTokenJson as Abi;
+export const CreditLineManagerAbi: Abi = CreditLineManagerJson as Abi;
+export const GuaranteeRegistryAbi: Abi = GuaranteeRegistryJson as Abi;
+
+// compliance
+export const SanctionsScreeningAbi: Abi = SanctionsScreeningJson as Abi;
+export const AMLRegistryAbi: Abi = AMLRegistryJson as Abi;
+export const TradeComplianceEngineAbi: Abi = TradeComplianceEngineJson as Abi;
+export const CertificateOfOriginAbi: Abi = CertificateOfOriginJson as Abi;
+export const PhytosanitaryCertificateAbi: Abi = PhytosanitaryCertificateJson as Abi;
+export const HalalCertificationAbi: Abi = HalalCertificationJson as Abi;
+export const ProductRecallRegistryAbi: Abi = ProductRecallRegistryJson as Abi;
+export const ExportLicenseRegistryAbi: Abi = ExportLicenseRegistryJson as Abi;
+export const DutyAndTariffCalculatorAbi: Abi = DutyAndTariffCalculatorJson as Abi;
+export const CustomsDeclarationAbi: Abi = CustomsDeclarationJson as Abi;
+
+// dpp
+export const DigitalProductPassportAbi: Abi = DigitalProductPassportJson as Abi;
+export const DPPLifecycleRegistryAbi: Abi = DPPLifecycleRegistryJson as Abi;
+export const MaterialCompositionAbi: Abi = MaterialCompositionJson as Abi;
+export const RepairabilityIndexAbi: Abi = RepairabilityIndexJson as Abi;
+export const RecyclingRegistryAbi: Abi = RecyclingRegistryJson as Abi;
+export const DPPDataCarrierAbi: Abi = DPPDataCarrierJson as Abi;
+export const DPPComplianceOracleAbi: Abi = DPPComplianceOracleJson as Abi;
+
+// logistics
+export const FreightBookingAbi: Abi = FreightBookingJson as Abi;
+export const ColdChainMonitorAbi: Abi = ColdChainMonitorJson as Abi;
+export const BondedWarehouseAbi: Abi = BondedWarehouseJson as Abi;
+export const FleetRegistryAbi: Abi = FleetRegistryJson as Abi;
+export const RouteAttestationAbi: Abi = RouteAttestationJson as Abi;
+export const CustomsBondedAbi: Abi = CustomsBondedJson as Abi;
+export const ContainerRegistryAbi: Abi = ContainerRegistryJson as Abi;
+export const LastMileProofOfDeliveryAbi: Abi = LastMileProofOfDeliveryJson as Abi;
+
+// commodities
+export const CommodityTokenAbi: Abi = CommodityTokenJson as Abi;
+export const CommodityVaultAbi: Abi = CommodityVaultJson as Abi;
+export const HarvestRegistryAbi: Abi = HarvestRegistryJson as Abi;
+export const GradingRegistryAbi: Abi = GradingRegistryJson as Abi;
+export const StorageReceiptAbi: Abi = StorageReceiptJson as Abi;
+export const PriceOracleAbi: Abi = PriceOracleJson as Abi;
+
+// energy
+export const RenewableEnergyCertificateAbi: Abi = RenewableEnergyCertificateJson as Abi;
+export const EmissionsTradingAbi: Abi = EmissionsTradingJson as Abi;
+export const WaterCreditAbi: Abi = WaterCreditJson as Abi;
+export const BiodiversityCreditAbi: Abi = BiodiversityCreditJson as Abi;
+export const GreenBondIssuerAbi: Abi = GreenBondIssuerJson as Abi;
+
+// workforce
+export const WorkerCredentialAbi: Abi = WorkerCredentialJson as Abi;
+export const SafetyTrainingRegistryAbi: Abi = SafetyTrainingRegistryJson as Abi;
+export const MilestonePayrollAbi: Abi = MilestonePayrollJson as Abi;
+export const SkillAttestationAbi: Abi = SkillAttestationJson as Abi;
+export const LaborComplianceRegistryAbi: Abi = LaborComplianceRegistryJson as Abi;
+
+// data
+export const IoTSensorRegistryAbi: Abi = IoTSensorRegistryJson as Abi;
+export const QualityInspectionAbi: Abi = QualityInspectionJson as Abi;
+export const LabTestAttestationAbi: Abi = LabTestAttestationJson as Abi;
+export const OracleAggregatorAbi: Abi = OracleAggregatorJson as Abi;
+export const DataMarketplaceAbi: Abi = DataMarketplaceJson as Abi;
+
 /**
  * Map of contract name to its ABI. Frozen so consumers cannot mutate the shared
  * registry. Keyed exactly by {@link CONTRACT_NAMES}.
  */
 export const ABIS: Readonly<Record<ContractName, Abi>> = Object.freeze({
-  AddressBook: AddressBookJson as Abi,
-  ArbiterStaking: ArbiterStakingJson as Abi,
-  AttestationRegistry: AttestationRegistryJson as Abi,
-  AuctionHouse: AuctionHouseJson as Abi,
-  BatchMetadataStore: BatchMetadataStoreJson as Abi,
-  BatchNFT: BatchNFTJson as Abi,
-  BidManager: BidManagerJson as Abi,
-  BuyerRegistry: BuyerRegistryJson as Abi,
-  CarbonCreditToken: CarbonCreditTokenJson as Abi,
-  CarrierRegistry: CarrierRegistryJson as Abi,
-  CheckpointOracle: CheckpointOracleJson as Abi,
-  ClaimsProcessor: ClaimsProcessorJson as Abi,
-  DiscountCalculator: DiscountCalculatorJson as Abi,
-  DisputeArbitration: DisputeArbitrationJson as Abi,
-  EmissionsController: EmissionsControllerJson as Abi,
-  ESGRegistry: ESGRegistryJson as Abi,
-  EscrowFactory: EscrowFactoryJson as Abi,
-  FeeManager: FeeManagerJson as Abi,
-  FinancingMarketplace: FinancingMarketplaceJson as Abi,
-  FinancingPool: FinancingPoolJson as Abi,
-  GovernanceToken: GovernanceTokenJson as Abi,
-  IdentityResolver: IdentityResolverJson as Abi,
-  InsurancePool: InsurancePoolJson as Abi,
-  InvoiceFinancing: InvoiceFinancingJson as Abi,
-  InvoiceNFT: InvoiceNFTJson as Abi,
-  KYCRegistry: KYCRegistryJson as Abi,
-  LenderVault: LenderVaultJson as Abi,
-  ListingRegistry: ListingRegistryJson as Abi,
-  LoyaltyPoints: LoyaltyPointsJson as Abi,
-  MockUSDC: MockUsdcJson as Abi,
-  OffsetMarketplace: OffsetMarketplaceJson as Abi,
-  OrderBook: OrderBookJson as Abi,
-  OrganizationRegistry: OrganizationRegistryJson as Abi,
-  Pauser: PauserJson as Abi,
-  PaymentRouter: PaymentRouterJson as Abi,
-  PolicyManager: PolicyManagerJson as Abi,
-  PremiumCalculator: PremiumCalculatorJson as Abi,
-  ProofChainGovernor: ProofChainGovernorJson as Abi,
-  ProofChainTimelock: ProofChainTimelockJson as Abi,
-  ProposalRegistry: ProposalRegistryJson as Abi,
-  ProvenanceFactory: ProvenanceFactoryJson as Abi,
-  ProvenanceRegistry: ProvenanceRegistryJson as Abi,
-  ReceivableRegistry: ReceivableRegistryJson as Abi,
-  ReferralProgram: ReferralProgramJson as Abi,
-  RepaymentController: RepaymentControllerJson as Abi,
-  ReputationEngine: ReputationEngineJson as Abi,
-  RewardsDistributor: RewardsDistributorJson as Abi,
-  RiskPool: RiskPoolJson as Abi,
-  ScoreOracle: ScoreOracleJson as Abi,
-  SettlementEscrow: SettlementEscrowJson as Abi,
-  SettlementRouter: SettlementRouterJson as Abi,
-  SlashingController: SlashingControllerJson as Abi,
-  StablecoinRegistry: StablecoinRegistryJson as Abi,
-  StakeManager: StakeManagerJson as Abi,
-  StakingRewards: StakingRewardsJson as Abi,
-  SupplierBond: SupplierBondJson as Abi,
-  SupplierRegistry: SupplierRegistryJson as Abi,
-  SustainabilityOracle: SustainabilityOracleJson as Abi,
-  Treasury: TreasuryJson as Abi,
-  WarehouseReceipt: WarehouseReceiptJson as Abi,
-  YieldDistributor: YieldDistributorJson as Abi,
-  // Wave A
-  LetterOfCredit: LetterOfCreditJson as Abi,
-  BillOfExchange: BillOfExchangeJson as Abi,
-  FactoringAgreement: FactoringAgreementJson as Abi,
-  PurchaseOrderFinancing: PurchaseOrderFinancingJson as Abi,
-  DynamicDiscounting: DynamicDiscountingJson as Abi,
-  SupplyChainFinance: SupplyChainFinanceJson as Abi,
-  ReceivableSecuritization: ReceivableSecuritizationJson as Abi,
-  TrancheToken: TrancheTokenJson as Abi,
-  CreditLineManager: CreditLineManagerJson as Abi,
-  GuaranteeRegistry: GuaranteeRegistryJson as Abi,
-  SanctionsScreening: SanctionsScreeningJson as Abi,
-  AMLRegistry: AMLRegistryJson as Abi,
-  TradeComplianceEngine: TradeComplianceEngineJson as Abi,
-  CertificateOfOrigin: CertificateOfOriginJson as Abi,
-  PhytosanitaryCertificate: PhytosanitaryCertificateJson as Abi,
-  HalalCertification: HalalCertificationJson as Abi,
-  ProductRecallRegistry: ProductRecallRegistryJson as Abi,
-  ExportLicenseRegistry: ExportLicenseRegistryJson as Abi,
-  DutyAndTariffCalculator: DutyAndTariffCalculatorJson as Abi,
-  CustomsDeclaration: CustomsDeclarationJson as Abi,
-  DigitalProductPassport: DigitalProductPassportJson as Abi,
-  DPPLifecycleRegistry: DPPLifecycleRegistryJson as Abi,
-  MaterialComposition: MaterialCompositionJson as Abi,
-  RepairabilityIndex: RepairabilityIndexJson as Abi,
-  RecyclingRegistry: RecyclingRegistryJson as Abi,
-  DPPDataCarrier: DPPDataCarrierJson as Abi,
-  DPPComplianceOracle: DPPComplianceOracleJson as Abi,
-  FreightBooking: FreightBookingJson as Abi,
-  ColdChainMonitor: ColdChainMonitorJson as Abi,
-  BondedWarehouse: BondedWarehouseJson as Abi,
-  FleetRegistry: FleetRegistryJson as Abi,
-  RouteAttestation: RouteAttestationJson as Abi,
-  CustomsBonded: CustomsBondedJson as Abi,
-  ContainerRegistry: ContainerRegistryJson as Abi,
-  LastMileProofOfDelivery: LastMileProofOfDeliveryJson as Abi,
-  CommodityToken: CommodityTokenJson as Abi,
-  CommodityVault: CommodityVaultJson as Abi,
-  HarvestRegistry: HarvestRegistryJson as Abi,
-  GradingRegistry: GradingRegistryJson as Abi,
-  StorageReceipt: StorageReceiptJson as Abi,
-  PriceOracle: PriceOracleJson as Abi,
-  RenewableEnergyCertificate: RenewableEnergyCertificateJson as Abi,
-  EmissionsTrading: EmissionsTradingJson as Abi,
-  WaterCredit: WaterCreditJson as Abi,
-  BiodiversityCredit: BiodiversityCreditJson as Abi,
-  GreenBondIssuer: GreenBondIssuerJson as Abi,
-  WorkerCredential: WorkerCredentialJson as Abi,
-  SafetyTrainingRegistry: SafetyTrainingRegistryJson as Abi,
-  MilestonePayroll: MilestonePayrollJson as Abi,
-  SkillAttestation: SkillAttestationJson as Abi,
-  LaborComplianceRegistry: LaborComplianceRegistryJson as Abi,
-  IoTSensorRegistry: IoTSensorRegistryJson as Abi,
-  QualityInspection: QualityInspectionJson as Abi,
-  LabTestAttestation: LabTestAttestationJson as Abi,
-  OracleAggregator: OracleAggregatorJson as Abi,
-  DataMarketplace: DataMarketplaceJson as Abi,
+  // core / infrastructure
+  AddressBook: AddressBookAbi,
+  // provenance
+  ProvenanceRegistry: ProvenanceRegistryAbi,
+  ProvenanceFactory: ProvenanceFactoryAbi,
+  AttestationRegistry: AttestationRegistryAbi,
+  BatchNFT: BatchNFTAbi,
+  BatchMetadataStore: BatchMetadataStoreAbi,
+  CheckpointOracle: CheckpointOracleAbi,
+  // identity
+  OrganizationRegistry: OrganizationRegistryAbi,
+  IdentityResolver: IdentityResolverAbi,
+  SupplierRegistry: SupplierRegistryAbi,
+  BuyerRegistry: BuyerRegistryAbi,
+  CarrierRegistry: CarrierRegistryAbi,
+  KYCRegistry: KYCRegistryAbi,
+  // reputation
+  ReputationEngine: ReputationEngineAbi,
+  ScoreOracle: ScoreOracleAbi,
+  SupplierBond: SupplierBondAbi,
+  ArbiterStaking: ArbiterStakingAbi,
+  StakeManager: StakeManagerAbi,
+  SlashingController: SlashingControllerAbi,
+  // finance
+  ReceivableRegistry: ReceivableRegistryAbi,
+  InvoiceNFT: InvoiceNFTAbi,
+  InvoiceFinancing: InvoiceFinancingAbi,
+  FinancingPool: FinancingPoolAbi,
+  LenderVault: LenderVaultAbi,
+  RepaymentController: RepaymentControllerAbi,
+  DiscountCalculator: DiscountCalculatorAbi,
+  YieldDistributor: YieldDistributorAbi,
+  // payments
+  SettlementEscrow: SettlementEscrowAbi,
+  SettlementRouter: SettlementRouterAbi,
+  EscrowFactory: EscrowFactoryAbi,
+  PaymentRouter: PaymentRouterAbi,
+  StablecoinRegistry: StablecoinRegistryAbi,
+  FeeManager: FeeManagerAbi,
+  MockUSDC: MockUSDCAbi,
+  // insurance
+  PolicyManager: PolicyManagerAbi,
+  ClaimsProcessor: ClaimsProcessorAbi,
+  InsurancePool: InsurancePoolAbi,
+  PremiumCalculator: PremiumCalculatorAbi,
+  RiskPool: RiskPoolAbi,
+  // governance
+  ProofChainGovernor: ProofChainGovernorAbi,
+  ProofChainTimelock: ProofChainTimelockAbi,
+  GovernanceToken: GovernanceTokenAbi,
+  ProposalRegistry: ProposalRegistryAbi,
+  DisputeArbitration: DisputeArbitrationAbi,
+  Pauser: PauserAbi,
+  Treasury: TreasuryAbi,
+  // esg
+  ESGRegistry: ESGRegistryAbi,
+  CarbonCreditToken: CarbonCreditTokenAbi,
+  SustainabilityOracle: SustainabilityOracleAbi,
+  EmissionsController: EmissionsControllerAbi,
+  OffsetMarketplace: OffsetMarketplaceAbi,
+  WarehouseReceipt: WarehouseReceiptAbi,
+  // marketplace
+  ListingRegistry: ListingRegistryAbi,
+  AuctionHouse: AuctionHouseAbi,
+  OrderBook: OrderBookAbi,
+  BidManager: BidManagerAbi,
+  FinancingMarketplace: FinancingMarketplaceAbi,
+  // rewards
+  RewardsDistributor: RewardsDistributorAbi,
+  LoyaltyPoints: LoyaltyPointsAbi,
+  ReferralProgram: ReferralProgramAbi,
+  StakingRewards: StakingRewardsAbi,
+  // tradefinance
+  LetterOfCredit: LetterOfCreditAbi,
+  BillOfExchange: BillOfExchangeAbi,
+  FactoringAgreement: FactoringAgreementAbi,
+  PurchaseOrderFinancing: PurchaseOrderFinancingAbi,
+  DynamicDiscounting: DynamicDiscountingAbi,
+  SupplyChainFinance: SupplyChainFinanceAbi,
+  ReceivableSecuritization: ReceivableSecuritizationAbi,
+  TrancheToken: TrancheTokenAbi,
+  CreditLineManager: CreditLineManagerAbi,
+  GuaranteeRegistry: GuaranteeRegistryAbi,
+  // compliance
+  SanctionsScreening: SanctionsScreeningAbi,
+  AMLRegistry: AMLRegistryAbi,
+  TradeComplianceEngine: TradeComplianceEngineAbi,
+  CertificateOfOrigin: CertificateOfOriginAbi,
+  PhytosanitaryCertificate: PhytosanitaryCertificateAbi,
+  HalalCertification: HalalCertificationAbi,
+  ProductRecallRegistry: ProductRecallRegistryAbi,
+  ExportLicenseRegistry: ExportLicenseRegistryAbi,
+  DutyAndTariffCalculator: DutyAndTariffCalculatorAbi,
+  CustomsDeclaration: CustomsDeclarationAbi,
+  // dpp
+  DigitalProductPassport: DigitalProductPassportAbi,
+  DPPLifecycleRegistry: DPPLifecycleRegistryAbi,
+  MaterialComposition: MaterialCompositionAbi,
+  RepairabilityIndex: RepairabilityIndexAbi,
+  RecyclingRegistry: RecyclingRegistryAbi,
+  DPPDataCarrier: DPPDataCarrierAbi,
+  DPPComplianceOracle: DPPComplianceOracleAbi,
+  // logistics
+  FreightBooking: FreightBookingAbi,
+  ColdChainMonitor: ColdChainMonitorAbi,
+  BondedWarehouse: BondedWarehouseAbi,
+  FleetRegistry: FleetRegistryAbi,
+  RouteAttestation: RouteAttestationAbi,
+  CustomsBonded: CustomsBondedAbi,
+  ContainerRegistry: ContainerRegistryAbi,
+  LastMileProofOfDelivery: LastMileProofOfDeliveryAbi,
+  // commodities
+  CommodityToken: CommodityTokenAbi,
+  CommodityVault: CommodityVaultAbi,
+  HarvestRegistry: HarvestRegistryAbi,
+  GradingRegistry: GradingRegistryAbi,
+  StorageReceipt: StorageReceiptAbi,
+  PriceOracle: PriceOracleAbi,
+  // energy
+  RenewableEnergyCertificate: RenewableEnergyCertificateAbi,
+  EmissionsTrading: EmissionsTradingAbi,
+  WaterCredit: WaterCreditAbi,
+  BiodiversityCredit: BiodiversityCreditAbi,
+  GreenBondIssuer: GreenBondIssuerAbi,
+  // workforce
+  WorkerCredential: WorkerCredentialAbi,
+  SafetyTrainingRegistry: SafetyTrainingRegistryAbi,
+  MilestonePayroll: MilestonePayrollAbi,
+  SkillAttestation: SkillAttestationAbi,
+  LaborComplianceRegistry: LaborComplianceRegistryAbi,
+  // data
+  IoTSensorRegistry: IoTSensorRegistryAbi,
+  QualityInspection: QualityInspectionAbi,
+  LabTestAttestation: LabTestAttestationAbi,
+  OracleAggregator: OracleAggregatorAbi,
+  DataMarketplace: DataMarketplaceAbi,
 });
+
+/** Alias of {@link ABIS}; the domain-oriented name for the same frozen registry. */
+export const CONTRACT_ABIS = ABIS;
 
 // ---------------------------------------------------------------------------
 // Legacy named exports (the original core four). Retained so existing agent/web
-// imports keep resolving after the platform-expansion wiring.
+// imports keep resolving.
 // ---------------------------------------------------------------------------
 
 export const provenanceRegistryAbi: Abi = ABIS.ProvenanceRegistry;

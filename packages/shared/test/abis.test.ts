@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   ABIS,
+  CONTRACT_ABIS,
   CONTRACT_NAMES,
   getAbi,
   isContractName,
+  SettlementEscrowAbi,
   attestationRegistryAbi,
   mockUsdcAbi,
   provenanceRegistryAbi,
@@ -12,8 +14,8 @@ import {
 } from "../src/abis/index";
 
 describe("ABIS registry", () => {
-  it("wires all 61 platform contracts", () => {
-    expect(CONTRACT_NAMES.length).toBe(61);
+  it("wires all 117 platform contracts", () => {
+    expect(CONTRACT_NAMES.length).toBe(117);
     // No duplicate names.
     expect(new Set(CONTRACT_NAMES).size).toBe(CONTRACT_NAMES.length);
   });
@@ -78,5 +80,17 @@ describe("legacy core ABI exports", () => {
     expect(attestationRegistryAbi).toBe(ABIS.AttestationRegistry);
     expect(settlementEscrowAbi).toBe(ABIS.SettlementEscrow);
     expect(mockUsdcAbi).toBe(ABIS.MockUSDC);
+  });
+});
+
+describe("per-contract <Name>Abi consts", () => {
+  it("expose a typed const per contract that is identical to the map entry", () => {
+    // Spot-check a representative named const.
+    expect(SettlementEscrowAbi).toBe(ABIS.SettlementEscrow);
+  });
+
+  it("CONTRACT_ABIS aliases the frozen ABIS registry", () => {
+    expect(CONTRACT_ABIS).toBe(ABIS);
+    expect(Object.isFrozen(CONTRACT_ABIS)).toBe(true);
   });
 });

@@ -193,3 +193,14 @@ export {
   type ErrorEnvelope,
   type Result,
 } from "./errors";
+
+// ---------------------------------------------------------------------------
+// Domain barrels. These surface the per-contract `<Name>Abi` consts and every
+// per-domain type/decoder/constant module the Domains phase adds. The explicit
+// re-exports above always take precedence over these wildcard re-exports, so no
+// previously-exported name changes meaning.
+// ---------------------------------------------------------------------------
+export * from "./abis/index";
+export * from "./types/index";
+export * from "./decoders/index";
+export * from "./constants/index";

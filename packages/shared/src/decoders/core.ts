@@ -7,9 +7,9 @@ import {
 } from "viem";
 import { z } from "zod";
 
-import { ABIS, CONTRACT_NAMES, type ContractName } from "./abis/index";
-import { DecodeError, ValidationError } from "./errors";
-import { HexSchema } from "./types";
+import { ABIS, CONTRACT_NAMES, type ContractName } from "../abis/index";
+import { DecodeError, ValidationError } from "../errors";
+import { HexSchema } from "../types";
 
 /** Minimal shape of an EVM log required to decode an event. */
 export interface RawEventLog {
