@@ -1,0 +1,18 @@
+BILL OF LADING
+================================================================
+B/L No:           BL-FRAUD-002
+Batch ID:         BATCH-FRAUD-002
+Carrier:          Straits Container Line
+Vessel:           MV Klang Star / Voyage 119E
+Port of Loading:  Port Klang, Malaysia
+Port of Discharge:Gothenburg, Sweden
+Shipper:          Selangor Precision Components Sdn Bhd
+Consignee:        Nordic Automotive AB
+
+Cargo Manifest:
+  - CNC Aluminium Housing (SKU AH-220)   1,000 units   <-- invoice claims 4,000
+  - Stainless Fastener Set  (SKU SF-9)   8,000 units
+
+Gross Weight:     640 kg
+Containers:       1 x 20ft (SCLU-2201199)
+Checkpoint:       Port Klang gate-in confirmed 2026-07-29

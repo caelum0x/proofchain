@@ -1,0 +1,18 @@
+BILL OF LADING
+================================================================
+B/L No:           BL-CLEAN-001
+Batch ID:         BATCH-CLEAN-001
+Carrier:          Straits Container Line
+Vessel:           MV Klang Star / Voyage 118E
+Port of Loading:  Port Klang, Malaysia
+Port of Discharge:Gothenburg, Sweden
+Shipper:          Selangor Precision Components Sdn Bhd
+Consignee:        Nordic Automotive AB
+
+Cargo Manifest:
+  - CNC Aluminium Housing (SKU AH-220)   4,000 units
+  - Stainless Fastener Set  (SKU SF-9)   8,000 units
+
+Gross Weight:     1,240 kg
+Containers:       1 x 20ft (SCLU-2201188)
+Checkpoint:       Port Klang gate-in confirmed 2026-07-28

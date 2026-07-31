@@ -1,0 +1,18 @@
+COMMERCIAL INVOICE
+================================================================
+Invoice No:       INV-CLEAN-001
+Batch ID:         BATCH-CLEAN-001
+Date:             2026-07-28
+Supplier:         Selangor Precision Components Sdn Bhd
+Buyer:            Nordic Automotive AB
+Origin:           Port Klang, Malaysia
+Destination:      Gothenburg, Sweden
+
+Line Items:
+  1. CNC Aluminium Housing (SKU AH-220)   qty 4,000  @ USD 0.150 = USD  600.00
+  2. Stainless Fastener Set  (SKU SF-9)    qty 8,000  @ USD 0.050 = USD  400.00
+----------------------------------------------------------------
+Subtotal:                                                USD 1,000.00
+Total Due:                                               USD 1,000.00
+
+Incoterms: FOB Port Klang

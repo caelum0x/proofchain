@@ -1,0 +1,22 @@
+COMMERCIAL INVOICE
+================================================================
+Invoice No:       INV-FRAUD-002
+Batch ID:         BATCH-FRAUD-002
+Date:             2026-07-29
+Supplier:         Selangor Precision Components Sdn Bhd
+Buyer:            Nordic Automotive AB
+Origin:           Port Klang, Malaysia
+Destination:      Gothenburg, Sweden
+
+Line Items:
+  1. CNC Aluminium Housing (SKU AH-220)   qty 4,000  @ USD 0.150 = USD  600.00
+  2. Stainless Fastener Set  (SKU SF-9)    qty 8,000  @ USD 0.050 = USD  400.00
+----------------------------------------------------------------
+Subtotal:                                                USD 1,000.00
+Total Due:                                               USD   500.00   <-- does not match subtotal
+
+Incoterms: FOB Port Klang
+
+NOTE: Total Due has been altered to USD 500.00 while line items still sum to
+USD 1,000.00 (INVOICE_TOTAL_MISMATCH). Declared housing quantity (4,000) also
+exceeds the bill of lading manifest (1,000 units) — QUANTITY_MISMATCH.
