@@ -1,0 +1,20 @@
+{
+  "name": "proofchain",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI-verified supply-chain provenance with autonomous on-chain settlement",
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "contracts:build": "pnpm --filter @proofchain/contracts build",
+    "contracts:test": "pnpm --filter @proofchain/contracts test",
+    "web:dev": "pnpm --filter @proofchain/web dev",
+    "agent:dev": "pnpm --filter @proofchain/agent dev"
+  }
+}
