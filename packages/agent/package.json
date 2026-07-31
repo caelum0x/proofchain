@@ -1,0 +1,49 @@
+{
+  "name": "@proofchain/agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ProofChain AI verification agent — Fastify HTTP service running a Claude tool-calling verification pipeline with deterministic scoring and on-chain attestation.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "@fastify/rate-limit": "^10.2.0",
+    "@proofchain/shared": "workspace:*",
+    "fastify": "^5.2.0",
+    "pino": "^9.5.0",
+    "viem": "^2.21.55",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@vitest/coverage-v8": "^2.1.8",
+    "pino-pretty": "^13.0.0",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "@proofchain/infra",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "ProofChain infrastructure: Supabase schema + typed client, IPFS pinning (Pinata + local fallback), and deploy/ops docs.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema.sql": "./schema.sql"
+  },
+  "files": [
+    "dist",
+    "schema.sql",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@vitest/coverage-v8": "^2.1.2",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

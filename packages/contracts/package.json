@@ -1,0 +1,20 @@
+{
+  "name": "@proofchain/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ProofChain Solidity contracts (Foundry): ProvenanceRegistry, AttestationRegistry, SettlementEscrow, MockUSDC",
+  "type": "module",
+  "scripts": {
+    "build": "forge build && pnpm run export:abis",
+    "test": "forge test -vvv",
+    "coverage": "forge coverage --no-match-coverage \"(test|script)\"",
+    "fmt": "forge fmt",
+    "fmt:check": "forge fmt --check",
+    "export:abis": "node scripts/export-abis.mjs",
+    "clean": "forge clean",
+    "deploy:base-sepolia": "forge script script/Deploy.s.sol:Deploy --rpc-url \"$BASE_SEPOLIA_RPC_URL\" --broadcast --verify -vvvv"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

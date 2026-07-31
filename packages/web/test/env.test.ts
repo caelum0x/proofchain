@@ -1,0 +1,21 @@
+import { describe, expect, it } from "vitest";
+import {
+  BASE_SEPOLIA_CHAIN_ID,
+  env,
+  isEnvValid,
+  isUnexpectedChain,
+} from "@/lib/env";
+
+describe("client env (with test setup values)", () => {
+  it("is valid", () => {
+    expect(isEnvValid).toBe(true);
+  });
+  it("uses the Base Sepolia chain id", () => {
+    expect(BASE_SEPOLIA_CHAIN_ID).toBe(84532);
+    expect(env.chainId).toBe(84532);
+    expect(isUnexpectedChain).toBe(false);
+  });
+  it("parses the agent api url", () => {
+    expect(env.agentApiUrl).toMatch(/^https?:\/\//);
+  });
+});
