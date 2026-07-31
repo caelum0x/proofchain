@@ -36,6 +36,26 @@ const CONTRACTS = [
   "ListingRegistry", "FinancingMarketplace", "AuctionHouse", "OrderBook", "BidManager",
   // M10 rewards & loyalty
   "LoyaltyPoints", "RewardsDistributor", "StakingRewards", "ReferralProgram", "EmissionsController",
+  // Wave A: tradefinance
+  "LetterOfCredit", "BillOfExchange", "FactoringAgreement", "PurchaseOrderFinancing", "DynamicDiscounting",
+  "SupplyChainFinance", "ReceivableSecuritization", "TrancheToken", "CreditLineManager", "GuaranteeRegistry",
+  // Wave A: compliance
+  "SanctionsScreening", "AMLRegistry", "TradeComplianceEngine", "CertificateOfOrigin", "PhytosanitaryCertificate",
+  "HalalCertification", "ProductRecallRegistry", "ExportLicenseRegistry", "DutyAndTariffCalculator", "CustomsDeclaration",
+  // Wave A: dpp
+  "DigitalProductPassport", "DPPLifecycleRegistry", "MaterialComposition", "RepairabilityIndex", "RecyclingRegistry",
+  "DPPDataCarrier", "DPPComplianceOracle",
+  // Wave A: logistics
+  "FreightBooking", "ColdChainMonitor", "BondedWarehouse", "FleetRegistry", "RouteAttestation",
+  "CustomsBonded", "ContainerRegistry", "LastMileProofOfDelivery",
+  // Wave A: commodities
+  "CommodityToken", "CommodityVault", "HarvestRegistry", "GradingRegistry", "StorageReceipt", "PriceOracle",
+  // Wave A: energy
+  "RenewableEnergyCertificate", "EmissionsTrading", "WaterCredit", "BiodiversityCredit", "GreenBondIssuer",
+  // Wave A: workforce
+  "WorkerCredential", "SafetyTrainingRegistry", "MilestonePayroll", "SkillAttestation", "LaborComplianceRegistry",
+  // Wave A: data
+  "IoTSensorRegistry", "QualityInspection", "LabTestAttestation", "OracleAggregator", "DataMarketplace",
 ];
 
 function loadAbi(name) {

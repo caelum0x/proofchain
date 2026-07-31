@@ -62,6 +62,64 @@ import TreasuryJson from "./Treasury.json";
 import WarehouseReceiptJson from "./WarehouseReceipt.json";
 import YieldDistributorJson from "./YieldDistributor.json";
 
+// Wave A: real-world trade domains
+import LetterOfCreditJson from "./LetterOfCredit.json";
+import BillOfExchangeJson from "./BillOfExchange.json";
+import FactoringAgreementJson from "./FactoringAgreement.json";
+import PurchaseOrderFinancingJson from "./PurchaseOrderFinancing.json";
+import DynamicDiscountingJson from "./DynamicDiscounting.json";
+import SupplyChainFinanceJson from "./SupplyChainFinance.json";
+import ReceivableSecuritizationJson from "./ReceivableSecuritization.json";
+import TrancheTokenJson from "./TrancheToken.json";
+import CreditLineManagerJson from "./CreditLineManager.json";
+import GuaranteeRegistryJson from "./GuaranteeRegistry.json";
+import SanctionsScreeningJson from "./SanctionsScreening.json";
+import AMLRegistryJson from "./AMLRegistry.json";
+import TradeComplianceEngineJson from "./TradeComplianceEngine.json";
+import CertificateOfOriginJson from "./CertificateOfOrigin.json";
+import PhytosanitaryCertificateJson from "./PhytosanitaryCertificate.json";
+import HalalCertificationJson from "./HalalCertification.json";
+import ProductRecallRegistryJson from "./ProductRecallRegistry.json";
+import ExportLicenseRegistryJson from "./ExportLicenseRegistry.json";
+import DutyAndTariffCalculatorJson from "./DutyAndTariffCalculator.json";
+import CustomsDeclarationJson from "./CustomsDeclaration.json";
+import DigitalProductPassportJson from "./DigitalProductPassport.json";
+import DPPLifecycleRegistryJson from "./DPPLifecycleRegistry.json";
+import MaterialCompositionJson from "./MaterialComposition.json";
+import RepairabilityIndexJson from "./RepairabilityIndex.json";
+import RecyclingRegistryJson from "./RecyclingRegistry.json";
+import DPPDataCarrierJson from "./DPPDataCarrier.json";
+import DPPComplianceOracleJson from "./DPPComplianceOracle.json";
+import FreightBookingJson from "./FreightBooking.json";
+import ColdChainMonitorJson from "./ColdChainMonitor.json";
+import BondedWarehouseJson from "./BondedWarehouse.json";
+import FleetRegistryJson from "./FleetRegistry.json";
+import RouteAttestationJson from "./RouteAttestation.json";
+import CustomsBondedJson from "./CustomsBonded.json";
+import ContainerRegistryJson from "./ContainerRegistry.json";
+import LastMileProofOfDeliveryJson from "./LastMileProofOfDelivery.json";
+import CommodityTokenJson from "./CommodityToken.json";
+import CommodityVaultJson from "./CommodityVault.json";
+import HarvestRegistryJson from "./HarvestRegistry.json";
+import GradingRegistryJson from "./GradingRegistry.json";
+import StorageReceiptJson from "./StorageReceipt.json";
+import PriceOracleJson from "./PriceOracle.json";
+import RenewableEnergyCertificateJson from "./RenewableEnergyCertificate.json";
+import EmissionsTradingJson from "./EmissionsTrading.json";
+import WaterCreditJson from "./WaterCredit.json";
+import BiodiversityCreditJson from "./BiodiversityCredit.json";
+import GreenBondIssuerJson from "./GreenBondIssuer.json";
+import WorkerCredentialJson from "./WorkerCredential.json";
+import SafetyTrainingRegistryJson from "./SafetyTrainingRegistry.json";
+import MilestonePayrollJson from "./MilestonePayroll.json";
+import SkillAttestationJson from "./SkillAttestation.json";
+import LaborComplianceRegistryJson from "./LaborComplianceRegistry.json";
+import IoTSensorRegistryJson from "./IoTSensorRegistry.json";
+import QualityInspectionJson from "./QualityInspection.json";
+import LabTestAttestationJson from "./LabTestAttestation.json";
+import OracleAggregatorJson from "./OracleAggregator.json";
+import DataMarketplaceJson from "./DataMarketplace.json";
+
 /**
  * The full set of ProofChain contract ABIs.
  *
@@ -139,6 +197,63 @@ export const CONTRACT_NAMES = [
   "Treasury",
   "WarehouseReceipt",
   "YieldDistributor",
+  // Wave A
+  "LetterOfCredit",
+  "BillOfExchange",
+  "FactoringAgreement",
+  "PurchaseOrderFinancing",
+  "DynamicDiscounting",
+  "SupplyChainFinance",
+  "ReceivableSecuritization",
+  "TrancheToken",
+  "CreditLineManager",
+  "GuaranteeRegistry",
+  "SanctionsScreening",
+  "AMLRegistry",
+  "TradeComplianceEngine",
+  "CertificateOfOrigin",
+  "PhytosanitaryCertificate",
+  "HalalCertification",
+  "ProductRecallRegistry",
+  "ExportLicenseRegistry",
+  "DutyAndTariffCalculator",
+  "CustomsDeclaration",
+  "DigitalProductPassport",
+  "DPPLifecycleRegistry",
+  "MaterialComposition",
+  "RepairabilityIndex",
+  "RecyclingRegistry",
+  "DPPDataCarrier",
+  "DPPComplianceOracle",
+  "FreightBooking",
+  "ColdChainMonitor",
+  "BondedWarehouse",
+  "FleetRegistry",
+  "RouteAttestation",
+  "CustomsBonded",
+  "ContainerRegistry",
+  "LastMileProofOfDelivery",
+  "CommodityToken",
+  "CommodityVault",
+  "HarvestRegistry",
+  "GradingRegistry",
+  "StorageReceipt",
+  "PriceOracle",
+  "RenewableEnergyCertificate",
+  "EmissionsTrading",
+  "WaterCredit",
+  "BiodiversityCredit",
+  "GreenBondIssuer",
+  "WorkerCredential",
+  "SafetyTrainingRegistry",
+  "MilestonePayroll",
+  "SkillAttestation",
+  "LaborComplianceRegistry",
+  "IoTSensorRegistry",
+  "QualityInspection",
+  "LabTestAttestation",
+  "OracleAggregator",
+  "DataMarketplace",
 ] as const;
 
 export type ContractName = (typeof CONTRACT_NAMES)[number];
@@ -209,6 +324,63 @@ export const ABIS: Readonly<Record<ContractName, Abi>> = Object.freeze({
   Treasury: TreasuryJson as Abi,
   WarehouseReceipt: WarehouseReceiptJson as Abi,
   YieldDistributor: YieldDistributorJson as Abi,
+  // Wave A
+  LetterOfCredit: LetterOfCreditJson as Abi,
+  BillOfExchange: BillOfExchangeJson as Abi,
+  FactoringAgreement: FactoringAgreementJson as Abi,
+  PurchaseOrderFinancing: PurchaseOrderFinancingJson as Abi,
+  DynamicDiscounting: DynamicDiscountingJson as Abi,
+  SupplyChainFinance: SupplyChainFinanceJson as Abi,
+  ReceivableSecuritization: ReceivableSecuritizationJson as Abi,
+  TrancheToken: TrancheTokenJson as Abi,
+  CreditLineManager: CreditLineManagerJson as Abi,
+  GuaranteeRegistry: GuaranteeRegistryJson as Abi,
+  SanctionsScreening: SanctionsScreeningJson as Abi,
+  AMLRegistry: AMLRegistryJson as Abi,
+  TradeComplianceEngine: TradeComplianceEngineJson as Abi,
+  CertificateOfOrigin: CertificateOfOriginJson as Abi,
+  PhytosanitaryCertificate: PhytosanitaryCertificateJson as Abi,
+  HalalCertification: HalalCertificationJson as Abi,
+  ProductRecallRegistry: ProductRecallRegistryJson as Abi,
+  ExportLicenseRegistry: ExportLicenseRegistryJson as Abi,
+  DutyAndTariffCalculator: DutyAndTariffCalculatorJson as Abi,
+  CustomsDeclaration: CustomsDeclarationJson as Abi,
+  DigitalProductPassport: DigitalProductPassportJson as Abi,
+  DPPLifecycleRegistry: DPPLifecycleRegistryJson as Abi,
+  MaterialComposition: MaterialCompositionJson as Abi,
+  RepairabilityIndex: RepairabilityIndexJson as Abi,
+  RecyclingRegistry: RecyclingRegistryJson as Abi,
+  DPPDataCarrier: DPPDataCarrierJson as Abi,
+  DPPComplianceOracle: DPPComplianceOracleJson as Abi,
+  FreightBooking: FreightBookingJson as Abi,
+  ColdChainMonitor: ColdChainMonitorJson as Abi,
+  BondedWarehouse: BondedWarehouseJson as Abi,
+  FleetRegistry: FleetRegistryJson as Abi,
+  RouteAttestation: RouteAttestationJson as Abi,
+  CustomsBonded: CustomsBondedJson as Abi,
+  ContainerRegistry: ContainerRegistryJson as Abi,
+  LastMileProofOfDelivery: LastMileProofOfDeliveryJson as Abi,
+  CommodityToken: CommodityTokenJson as Abi,
+  CommodityVault: CommodityVaultJson as Abi,
+  HarvestRegistry: HarvestRegistryJson as Abi,
+  GradingRegistry: GradingRegistryJson as Abi,
+  StorageReceipt: StorageReceiptJson as Abi,
+  PriceOracle: PriceOracleJson as Abi,
+  RenewableEnergyCertificate: RenewableEnergyCertificateJson as Abi,
+  EmissionsTrading: EmissionsTradingJson as Abi,
+  WaterCredit: WaterCreditJson as Abi,
+  BiodiversityCredit: BiodiversityCreditJson as Abi,
+  GreenBondIssuer: GreenBondIssuerJson as Abi,
+  WorkerCredential: WorkerCredentialJson as Abi,
+  SafetyTrainingRegistry: SafetyTrainingRegistryJson as Abi,
+  MilestonePayroll: MilestonePayrollJson as Abi,
+  SkillAttestation: SkillAttestationJson as Abi,
+  LaborComplianceRegistry: LaborComplianceRegistryJson as Abi,
+  IoTSensorRegistry: IoTSensorRegistryJson as Abi,
+  QualityInspection: QualityInspectionJson as Abi,
+  LabTestAttestation: LabTestAttestationJson as Abi,
+  OracleAggregator: OracleAggregatorJson as Abi,
+  DataMarketplace: DataMarketplaceJson as Abi,
 });
 
 // ---------------------------------------------------------------------------

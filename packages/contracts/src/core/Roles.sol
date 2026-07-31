@@ -43,4 +43,25 @@ library Roles {
 
     /// @notice Global pause guardians (M0 Pauser and per-module pausing).
     bytes32 internal constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+
+    // --- Wave A: real-world trade domains ---
+
+    /// @notice Accredited bodies that issue certificates (origin, phytosanitary, halal,
+    ///         DPP compliance, worker/skill credentials).
+    bytes32 internal constant CERTIFIER_ROLE = keccak256("CERTIFIER_ROLE");
+
+    /// @notice Compliance officers recording sanctions/AML/trade-compliance determinations.
+    bytes32 internal constant COMPLIANCE_OFFICER_ROLE = keccak256("COMPLIANCE_OFFICER_ROLE");
+
+    /// @notice Customs authorities filing declarations and managing bonded movements.
+    bytes32 internal constant CUSTOMS_ROLE = keccak256("CUSTOMS_ROLE");
+
+    /// @notice Trade-finance underwriters approving LCs, credit lines and guarantees.
+    bytes32 internal constant UNDERWRITER_ROLE = keccak256("UNDERWRITER_ROLE");
+
+    /// @notice Accredited graders assigning commodity grades and harvest quality classes.
+    bytes32 internal constant GRADER_ROLE = keccak256("GRADER_ROLE");
+
+    /// @notice Inspectors / labs writing quality inspections and lab test attestations.
+    bytes32 internal constant INSPECTOR_ROLE = keccak256("INSPECTOR_ROLE");
 }

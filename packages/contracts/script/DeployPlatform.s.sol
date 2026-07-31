@@ -93,6 +93,78 @@ import { StakingRewards } from "../src/rewards/StakingRewards.sol";
 import { ReferralProgram } from "../src/rewards/ReferralProgram.sol";
 import { EmissionsController } from "../src/rewards/EmissionsController.sol";
 
+// Wave A: tradefinance
+import { LetterOfCredit } from "../src/tradefinance/LetterOfCredit.sol";
+import { BillOfExchange } from "../src/tradefinance/BillOfExchange.sol";
+import { FactoringAgreement } from "../src/tradefinance/FactoringAgreement.sol";
+import { PurchaseOrderFinancing } from "../src/tradefinance/PurchaseOrderFinancing.sol";
+import { DynamicDiscounting } from "../src/tradefinance/DynamicDiscounting.sol";
+import { SupplyChainFinance } from "../src/tradefinance/SupplyChainFinance.sol";
+import { ReceivableSecuritization } from "../src/tradefinance/ReceivableSecuritization.sol";
+import { TrancheToken } from "../src/tradefinance/TrancheToken.sol";
+import { CreditLineManager } from "../src/tradefinance/CreditLineManager.sol";
+import { GuaranteeRegistry } from "../src/tradefinance/GuaranteeRegistry.sol";
+
+// Wave A: compliance
+import { SanctionsScreening } from "../src/compliance/SanctionsScreening.sol";
+import { AMLRegistry } from "../src/compliance/AMLRegistry.sol";
+import { TradeComplianceEngine } from "../src/compliance/TradeComplianceEngine.sol";
+import { CertificateOfOrigin } from "../src/compliance/CertificateOfOrigin.sol";
+import { PhytosanitaryCertificate } from "../src/compliance/PhytosanitaryCertificate.sol";
+import { HalalCertification } from "../src/compliance/HalalCertification.sol";
+import { ProductRecallRegistry } from "../src/compliance/ProductRecallRegistry.sol";
+import { ExportLicenseRegistry } from "../src/compliance/ExportLicenseRegistry.sol";
+import { DutyAndTariffCalculator } from "../src/compliance/DutyAndTariffCalculator.sol";
+import { CustomsDeclaration } from "../src/compliance/CustomsDeclaration.sol";
+
+// Wave A: dpp
+import { DigitalProductPassport } from "../src/dpp/DigitalProductPassport.sol";
+import { DPPLifecycleRegistry } from "../src/dpp/DPPLifecycleRegistry.sol";
+import { MaterialComposition } from "../src/dpp/MaterialComposition.sol";
+import { RepairabilityIndex } from "../src/dpp/RepairabilityIndex.sol";
+import { RecyclingRegistry } from "../src/dpp/RecyclingRegistry.sol";
+import { DPPDataCarrier } from "../src/dpp/DPPDataCarrier.sol";
+import { DPPComplianceOracle } from "../src/dpp/DPPComplianceOracle.sol";
+
+// Wave A: logistics
+import { FreightBooking } from "../src/logistics/FreightBooking.sol";
+import { ColdChainMonitor } from "../src/logistics/ColdChainMonitor.sol";
+import { BondedWarehouse } from "../src/logistics/BondedWarehouse.sol";
+import { FleetRegistry } from "../src/logistics/FleetRegistry.sol";
+import { RouteAttestation } from "../src/logistics/RouteAttestation.sol";
+import { CustomsBonded } from "../src/logistics/CustomsBonded.sol";
+import { ContainerRegistry } from "../src/logistics/ContainerRegistry.sol";
+import { LastMileProofOfDelivery } from "../src/logistics/LastMileProofOfDelivery.sol";
+
+// Wave A: commodities
+import { CommodityToken } from "../src/commodities/CommodityToken.sol";
+import { CommodityVault } from "../src/commodities/CommodityVault.sol";
+import { HarvestRegistry } from "../src/commodities/HarvestRegistry.sol";
+import { GradingRegistry } from "../src/commodities/GradingRegistry.sol";
+import { StorageReceipt } from "../src/commodities/StorageReceipt.sol";
+import { PriceOracle } from "../src/commodities/PriceOracle.sol";
+
+// Wave A: energy
+import { RenewableEnergyCertificate } from "../src/energy/RenewableEnergyCertificate.sol";
+import { EmissionsTrading } from "../src/energy/EmissionsTrading.sol";
+import { WaterCredit } from "../src/energy/WaterCredit.sol";
+import { BiodiversityCredit } from "../src/energy/BiodiversityCredit.sol";
+import { GreenBondIssuer } from "../src/energy/GreenBondIssuer.sol";
+
+// Wave A: workforce
+import { WorkerCredential } from "../src/workforce/WorkerCredential.sol";
+import { SafetyTrainingRegistry } from "../src/workforce/SafetyTrainingRegistry.sol";
+import { MilestonePayroll } from "../src/workforce/MilestonePayroll.sol";
+import { SkillAttestation } from "../src/workforce/SkillAttestation.sol";
+import { LaborComplianceRegistry } from "../src/workforce/LaborComplianceRegistry.sol";
+
+// Wave A: data
+import { IoTSensorRegistry } from "../src/data/IoTSensorRegistry.sol";
+import { QualityInspection } from "../src/data/QualityInspection.sol";
+import { LabTestAttestation } from "../src/data/LabTestAttestation.sol";
+import { OracleAggregator } from "../src/data/OracleAggregator.sol";
+import { DataMarketplace } from "../src/data/DataMarketplace.sol";
+
 /// @title DeployPlatform
 /// @notice Full-platform deployment: deploys the AddressBook, every module contract (~60), registers
 ///         all of them in the AddressBook, wires cross-module roles per SPEC2, and writes ALL
@@ -134,6 +206,16 @@ contract DeployPlatform is Script {
         _deployEsg();
         _deployMarketplace();
         _deployRewards();
+
+        // Wave A: real-world trade domains.
+        _deployTradeFinance();
+        _deployCompliance();
+        _deployDpp();
+        _deployLogistics();
+        _deployCommodities();
+        _deployEnergy();
+        _deployWorkforce();
+        _deployData();
 
         _wireRoles();
 
@@ -280,6 +362,99 @@ contract DeployPlatform is Script {
         );
     }
 
+    // ------------------------------------------------------------------ Wave A deploys
+
+    function _deployTradeFinance() internal {
+        _reg(Keys.LETTER_OF_CREDIT, address(new LetterOfCredit(address(book), deployer)));
+        _reg(Keys.BILL_OF_EXCHANGE, address(new BillOfExchange(address(book), deployer)));
+        _reg(Keys.FACTORING_AGREEMENT, address(new FactoringAgreement(address(book), deployer)));
+        _reg(Keys.PURCHASE_ORDER_FINANCING, address(new PurchaseOrderFinancing(address(book), deployer)));
+        _reg(Keys.DYNAMIC_DISCOUNTING, address(new DynamicDiscounting(address(book), deployer)));
+        _reg(Keys.SUPPLY_CHAIN_FINANCE, address(new SupplyChainFinance(address(book), deployer)));
+        _reg(Keys.RECEIVABLE_SECURITIZATION, address(new ReceivableSecuritization(address(book), deployer)));
+        // Template tranche token; the securitization module mints per-pool tranches at runtime.
+        _reg(
+            Keys.TRANCHE_TOKEN,
+            address(new TrancheToken("ProofChain Tranche", "PCT", bytes32(0), 0, deployer, _at(Keys.RECEIVABLE_SECURITIZATION)))
+        );
+        _reg(Keys.CREDIT_LINE_MANAGER, address(new CreditLineManager(address(book), deployer)));
+        _reg(Keys.GUARANTEE_REGISTRY, address(new GuaranteeRegistry(address(book), deployer)));
+    }
+
+    function _deployCompliance() internal {
+        _reg(Keys.SANCTIONS_SCREENING, address(new SanctionsScreening(address(book), deployer)));
+        _reg(Keys.AML_REGISTRY, address(new AMLRegistry(address(book), deployer)));
+        _reg(Keys.TRADE_COMPLIANCE_ENGINE, address(new TradeComplianceEngine(address(book), deployer)));
+        _reg(Keys.CERTIFICATE_OF_ORIGIN, address(new CertificateOfOrigin(address(book), deployer)));
+        _reg(Keys.PHYTOSANITARY_CERTIFICATE, address(new PhytosanitaryCertificate(address(book), deployer)));
+        _reg(Keys.HALAL_CERTIFICATION, address(new HalalCertification(address(book), deployer)));
+        _reg(Keys.PRODUCT_RECALL_REGISTRY, address(new ProductRecallRegistry(address(book), deployer)));
+        _reg(Keys.EXPORT_LICENSE_REGISTRY, address(new ExportLicenseRegistry(address(book), deployer)));
+        _reg(Keys.DUTY_AND_TARIFF_CALCULATOR, address(new DutyAndTariffCalculator(address(book), deployer)));
+        _reg(Keys.CUSTOMS_DECLARATION, address(new CustomsDeclaration(address(book), deployer)));
+    }
+
+    function _deployDpp() internal {
+        _reg(Keys.DIGITAL_PRODUCT_PASSPORT, address(new DigitalProductPassport(address(book), deployer)));
+        _reg(Keys.DPP_LIFECYCLE_REGISTRY, address(new DPPLifecycleRegistry(address(book), deployer)));
+        _reg(Keys.MATERIAL_COMPOSITION, address(new MaterialComposition(address(book), deployer)));
+        _reg(Keys.REPAIRABILITY_INDEX, address(new RepairabilityIndex(address(book), deployer)));
+        _reg(Keys.RECYCLING_REGISTRY, address(new RecyclingRegistry(address(book), deployer)));
+        _reg(Keys.DPP_DATA_CARRIER, address(new DPPDataCarrier(address(book), deployer)));
+        _reg(Keys.DPP_COMPLIANCE_ORACLE, address(new DPPComplianceOracle(address(book), deployer)));
+    }
+
+    function _deployLogistics() internal {
+        _reg(Keys.FREIGHT_BOOKING, address(new FreightBooking(address(book), deployer)));
+        _reg(Keys.COLD_CHAIN_MONITOR, address(new ColdChainMonitor(address(book), deployer)));
+        _reg(Keys.BONDED_WAREHOUSE, address(new BondedWarehouse(address(book), deployer)));
+        _reg(Keys.FLEET_REGISTRY, address(new FleetRegistry(address(book), deployer)));
+        _reg(Keys.ROUTE_ATTESTATION, address(new RouteAttestation(address(book), deployer)));
+        _reg(Keys.CUSTOMS_BONDED, address(new CustomsBonded(address(book), deployer)));
+        _reg(Keys.CONTAINER_REGISTRY, address(new ContainerRegistry(address(book), deployer)));
+        _reg(Keys.LAST_MILE_PROOF_OF_DELIVERY, address(new LastMileProofOfDelivery(address(book), deployer)));
+    }
+
+    function _deployCommodities() internal {
+        _reg(Keys.COMMODITY_VAULT, address(new CommodityVault(address(book), deployer)));
+        // The vault is the sole minter/burner of the commodity token (resolved via the AddressBook).
+        _reg(
+            Keys.COMMODITY_TOKEN,
+            address(new CommodityToken(address(book), deployer, "ProofChain Commodity", "PCCOM", bytes32("GENERIC"), bytes32("A")))
+        );
+        _reg(Keys.HARVEST_REGISTRY, address(new HarvestRegistry(address(book), deployer)));
+        _reg(Keys.GRADING_REGISTRY, address(new GradingRegistry(address(book), deployer)));
+        _reg(Keys.STORAGE_RECEIPT, address(new StorageReceipt(address(book), deployer)));
+        _reg(Keys.PRICE_ORACLE, address(new PriceOracle(address(book), deployer)));
+    }
+
+    function _deployEnergy() internal {
+        _reg(
+            Keys.RENEWABLE_ENERGY_CERTIFICATE,
+            address(new RenewableEnergyCertificate(address(book), deployer, "https://proofchain.example/rec/{id}.json"))
+        );
+        _reg(Keys.EMISSIONS_TRADING, address(new EmissionsTrading(address(book), deployer)));
+        _reg(Keys.WATER_CREDIT, address(new WaterCredit(address(book), deployer)));
+        _reg(Keys.BIODIVERSITY_CREDIT, address(new BiodiversityCredit(address(book), deployer)));
+        _reg(Keys.GREEN_BOND_ISSUER, address(new GreenBondIssuer(address(book), deployer)));
+    }
+
+    function _deployWorkforce() internal {
+        _reg(Keys.WORKER_CREDENTIAL, address(new WorkerCredential(address(book), deployer)));
+        _reg(Keys.SAFETY_TRAINING_REGISTRY, address(new SafetyTrainingRegistry(address(book), deployer)));
+        _reg(Keys.MILESTONE_PAYROLL, address(new MilestonePayroll(address(book), deployer)));
+        _reg(Keys.SKILL_ATTESTATION, address(new SkillAttestation(address(book), deployer)));
+        _reg(Keys.LABOR_COMPLIANCE_REGISTRY, address(new LaborComplianceRegistry(address(book), deployer)));
+    }
+
+    function _deployData() internal {
+        _reg(Keys.IOT_SENSOR_REGISTRY, address(new IoTSensorRegistry(address(book), deployer)));
+        _reg(Keys.QUALITY_INSPECTION, address(new QualityInspection(address(book), deployer)));
+        _reg(Keys.LAB_TEST_ATTESTATION, address(new LabTestAttestation(address(book), deployer)));
+        _reg(Keys.ORACLE_AGGREGATOR, address(new OracleAggregator(address(book), deployer)));
+        _reg(Keys.DATA_MARKETPLACE, address(new DataMarketplace(address(book), deployer)));
+    }
+
     // ------------------------------------------------------------------ wiring
 
     function _wireRoles() internal {
@@ -328,6 +503,18 @@ contract DeployPlatform is Script {
         // Governance: the Governor proposes/cancels through the Timelock; execution is open.
         _grant(Keys.PROOFCHAIN_TIMELOCK, PROPOSER_ROLE, _at(Keys.PROOFCHAIN_GOVERNOR));
         _grant(Keys.PROOFCHAIN_TIMELOCK, CANCELLER_ROLE, _at(Keys.PROOFCHAIN_GOVERNOR));
+
+        // --- Wave A: keepers push feeds into the oracle-style modules. ---
+        _grant(Keys.COLD_CHAIN_MONITOR, Roles.KEEPER_ROLE, keeper);
+        _grant(Keys.PRICE_ORACLE, Roles.KEEPER_ROLE, keeper);
+        _grant(Keys.IOT_SENSOR_REGISTRY, Roles.KEEPER_ROLE, keeper);
+        _grant(Keys.ROUTE_ATTESTATION, Roles.KEEPER_ROLE, keeper);
+        _grant(Keys.ORACLE_AGGREGATOR, Roles.KEEPER_ROLE, keeper);
+
+        // --- Wave A: the AI verification agent attests DPP compliance, emissions & payroll delivery. ---
+        _grant(Keys.DPP_COMPLIANCE_ORACLE, Roles.AGENT_ROLE, agent);
+        _grant(Keys.EMISSIONS_TRADING, Roles.AGENT_ROLE, agent);
+        _grant(Keys.MILESTONE_PAYROLL, Roles.AGENT_ROLE, agent);
     }
 
     // ------------------------------------------------------------------ output
@@ -420,7 +607,79 @@ contract DeployPlatform is Script {
         vm.serializeAddress(obj, "RewardsDistributor", _at(Keys.REWARDS_DISTRIBUTOR));
         vm.serializeAddress(obj, "StakingRewards", _at(Keys.STAKING_REWARDS));
         vm.serializeAddress(obj, "ReferralProgram", _at(Keys.REFERRAL_PROGRAM));
-        string memory json = vm.serializeAddress(obj, "EmissionsController", _at(Keys.EMISSIONS_CONTROLLER));
+        vm.serializeAddress(obj, "EmissionsController", _at(Keys.EMISSIONS_CONTROLLER));
+
+        // Wave A: tradefinance
+        vm.serializeAddress(obj, "LetterOfCredit", _at(Keys.LETTER_OF_CREDIT));
+        vm.serializeAddress(obj, "BillOfExchange", _at(Keys.BILL_OF_EXCHANGE));
+        vm.serializeAddress(obj, "FactoringAgreement", _at(Keys.FACTORING_AGREEMENT));
+        vm.serializeAddress(obj, "PurchaseOrderFinancing", _at(Keys.PURCHASE_ORDER_FINANCING));
+        vm.serializeAddress(obj, "DynamicDiscounting", _at(Keys.DYNAMIC_DISCOUNTING));
+        vm.serializeAddress(obj, "SupplyChainFinance", _at(Keys.SUPPLY_CHAIN_FINANCE));
+        vm.serializeAddress(obj, "ReceivableSecuritization", _at(Keys.RECEIVABLE_SECURITIZATION));
+        vm.serializeAddress(obj, "TrancheToken", _at(Keys.TRANCHE_TOKEN));
+        vm.serializeAddress(obj, "CreditLineManager", _at(Keys.CREDIT_LINE_MANAGER));
+        vm.serializeAddress(obj, "GuaranteeRegistry", _at(Keys.GUARANTEE_REGISTRY));
+
+        // Wave A: compliance
+        vm.serializeAddress(obj, "SanctionsScreening", _at(Keys.SANCTIONS_SCREENING));
+        vm.serializeAddress(obj, "AMLRegistry", _at(Keys.AML_REGISTRY));
+        vm.serializeAddress(obj, "TradeComplianceEngine", _at(Keys.TRADE_COMPLIANCE_ENGINE));
+        vm.serializeAddress(obj, "CertificateOfOrigin", _at(Keys.CERTIFICATE_OF_ORIGIN));
+        vm.serializeAddress(obj, "PhytosanitaryCertificate", _at(Keys.PHYTOSANITARY_CERTIFICATE));
+        vm.serializeAddress(obj, "HalalCertification", _at(Keys.HALAL_CERTIFICATION));
+        vm.serializeAddress(obj, "ProductRecallRegistry", _at(Keys.PRODUCT_RECALL_REGISTRY));
+        vm.serializeAddress(obj, "ExportLicenseRegistry", _at(Keys.EXPORT_LICENSE_REGISTRY));
+        vm.serializeAddress(obj, "DutyAndTariffCalculator", _at(Keys.DUTY_AND_TARIFF_CALCULATOR));
+        vm.serializeAddress(obj, "CustomsDeclaration", _at(Keys.CUSTOMS_DECLARATION));
+
+        // Wave A: dpp
+        vm.serializeAddress(obj, "DigitalProductPassport", _at(Keys.DIGITAL_PRODUCT_PASSPORT));
+        vm.serializeAddress(obj, "DPPLifecycleRegistry", _at(Keys.DPP_LIFECYCLE_REGISTRY));
+        vm.serializeAddress(obj, "MaterialComposition", _at(Keys.MATERIAL_COMPOSITION));
+        vm.serializeAddress(obj, "RepairabilityIndex", _at(Keys.REPAIRABILITY_INDEX));
+        vm.serializeAddress(obj, "RecyclingRegistry", _at(Keys.RECYCLING_REGISTRY));
+        vm.serializeAddress(obj, "DPPDataCarrier", _at(Keys.DPP_DATA_CARRIER));
+        vm.serializeAddress(obj, "DPPComplianceOracle", _at(Keys.DPP_COMPLIANCE_ORACLE));
+
+        // Wave A: logistics
+        vm.serializeAddress(obj, "FreightBooking", _at(Keys.FREIGHT_BOOKING));
+        vm.serializeAddress(obj, "ColdChainMonitor", _at(Keys.COLD_CHAIN_MONITOR));
+        vm.serializeAddress(obj, "BondedWarehouse", _at(Keys.BONDED_WAREHOUSE));
+        vm.serializeAddress(obj, "FleetRegistry", _at(Keys.FLEET_REGISTRY));
+        vm.serializeAddress(obj, "RouteAttestation", _at(Keys.ROUTE_ATTESTATION));
+        vm.serializeAddress(obj, "CustomsBonded", _at(Keys.CUSTOMS_BONDED));
+        vm.serializeAddress(obj, "ContainerRegistry", _at(Keys.CONTAINER_REGISTRY));
+        vm.serializeAddress(obj, "LastMileProofOfDelivery", _at(Keys.LAST_MILE_PROOF_OF_DELIVERY));
+
+        // Wave A: commodities
+        vm.serializeAddress(obj, "CommodityVault", _at(Keys.COMMODITY_VAULT));
+        vm.serializeAddress(obj, "CommodityToken", _at(Keys.COMMODITY_TOKEN));
+        vm.serializeAddress(obj, "HarvestRegistry", _at(Keys.HARVEST_REGISTRY));
+        vm.serializeAddress(obj, "GradingRegistry", _at(Keys.GRADING_REGISTRY));
+        vm.serializeAddress(obj, "StorageReceipt", _at(Keys.STORAGE_RECEIPT));
+        vm.serializeAddress(obj, "PriceOracle", _at(Keys.PRICE_ORACLE));
+
+        // Wave A: energy
+        vm.serializeAddress(obj, "RenewableEnergyCertificate", _at(Keys.RENEWABLE_ENERGY_CERTIFICATE));
+        vm.serializeAddress(obj, "EmissionsTrading", _at(Keys.EMISSIONS_TRADING));
+        vm.serializeAddress(obj, "WaterCredit", _at(Keys.WATER_CREDIT));
+        vm.serializeAddress(obj, "BiodiversityCredit", _at(Keys.BIODIVERSITY_CREDIT));
+        vm.serializeAddress(obj, "GreenBondIssuer", _at(Keys.GREEN_BOND_ISSUER));
+
+        // Wave A: workforce
+        vm.serializeAddress(obj, "WorkerCredential", _at(Keys.WORKER_CREDENTIAL));
+        vm.serializeAddress(obj, "SafetyTrainingRegistry", _at(Keys.SAFETY_TRAINING_REGISTRY));
+        vm.serializeAddress(obj, "MilestonePayroll", _at(Keys.MILESTONE_PAYROLL));
+        vm.serializeAddress(obj, "SkillAttestation", _at(Keys.SKILL_ATTESTATION));
+        vm.serializeAddress(obj, "LaborComplianceRegistry", _at(Keys.LABOR_COMPLIANCE_REGISTRY));
+
+        // Wave A: data
+        vm.serializeAddress(obj, "IoTSensorRegistry", _at(Keys.IOT_SENSOR_REGISTRY));
+        vm.serializeAddress(obj, "QualityInspection", _at(Keys.QUALITY_INSPECTION));
+        vm.serializeAddress(obj, "LabTestAttestation", _at(Keys.LAB_TEST_ATTESTATION));
+        vm.serializeAddress(obj, "OracleAggregator", _at(Keys.ORACLE_AGGREGATOR));
+        string memory json = vm.serializeAddress(obj, "DataMarketplace", _at(Keys.DATA_MARKETPLACE));
 
         vm.writeJson(json, "./deployments/base-sepolia.json");
     }
