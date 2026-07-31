@@ -1,8 +1,9 @@
 # ChainHack 2026 — ProofChain Submission
 
 ## One-liner
-AI-verified supply-chain provenance with autonomous on-chain settlement — an AI agent
-audits shipments, a smart-contract escrow enforces payment. **AI audits, the blockchain enforces.**
+The on-chain operating system for Industrial 5.0 trade — an AI agent audits shipments and its
+signed attestation becomes the trust primitive that gates settlement, financing, insurance,
+compliance, and the EU Digital Product Passport. **AI audits, the blockchain enforces.**
 
 ## Problem
 Global supply chains lose enormous value to document fraud, opaque provenance, and slow,
@@ -27,30 +28,41 @@ fraudulent shipment cannot be waved through by nondeterministic model output.
 - **Infrastructure & Developer Tools** — reusable provenance + attestation + settlement primitives
 
 ## What we built during the hackathon
-Everything in this repository was built during the ChainHack window. A monorepo of 5 packages:
-- **contracts** — 4 Solidity contracts (`ProvenanceRegistry`, `AttestationRegistry`,
-  `SettlementEscrow`, `MockUSDC`) with OpenZeppelin access control / SafeERC20 / reentrancy
-  guard / pausable, a deploy script, and 55 Foundry tests (happy path, every revert, access
-  control, reentrancy, threshold boundaries).
-- **shared** — typed ABI/type/address layer (viem, Base Sepolia), verdict schemas.
-- **agent** — Fastify service running a Claude tool-calling verification pipeline with a
-  deterministic scoring guard, on-chain attest/settle, fully mockable (73 tests).
-- **web** — Next.js 15 dApp (wagmi/viem/RainbowKit): supplier, buyer, verifier dashboard,
-  deal detail (80 tests).
-- **infra** — Supabase schema + client and IPFS pinning with a local fallback (45 tests).
+Everything in this repository was built during the ChainHack window — a full platform, a
+monorepo of 6 packages:
+- **contracts** — **120 Solidity contracts** across 19 modules (core provenance/attestation/
+  settlement, identity, reputation & bonds, invoice finance/RWA, trade finance, compliance,
+  EU Digital Product Passport, logistics, commodities, energy/ESG, workforce, insurance,
+  disputes & governance, marketplace, data/oracle, rewards) — interfaces-first with a central
+  AddressBook registry, OpenZeppelin access control / SafeERC20 / reentrancy guard / pausable,
+  a platform deploy script, and **1468 Foundry tests**.
+- **shared** — typed ABI/type/address layer (117 ABIs, per-domain types, viem, Base Sepolia) — **235 tests**.
+- **agent** — multi-skill AI verification engine (6 auto-collecting registries: 15+ document
+  parsers, cross-check packs, risk models, scoring dimensions with a deterministic reconciler,
+  Claude tool-calling, and 8 pipelines — financing eligibility, insurance underwriting, DPP
+  issuance, compliance screening, quality grading, ESG), on-chain attest/settle, fully mockable — **380 tests**.
+- **api** — platform backend (Fastify): ~98 routes, ~52 domain services, and an event indexer
+  feeding Supabase across every domain — **481 tests**.
+- **web** — Next.js 15 product dApp on a full design system (~120 pages: dashboards, explorers,
+  finance, compliance, DPP, logistics, ESG, workforce, governance, markets) — **178 tests**.
+- **infra** — Supabase repositories + per-domain schema modules and storage/queue/notifications/
+  cache/events adapters with local fallbacks — **203 tests**.
 
-**314 tests total, all passing.** Full lifecycle verified on a live chain via
-`scripts/local-e2e.sh` (clean → Released, fraud → Disputed → Refunded).
+**~2,945 tests total, all passing.** `pnpm -r typecheck` + `next build` green across the
+workspace. Core lifecycle verified on a live chain via `scripts/local-e2e.sh`
+(clean → Released, fraud → Disputed → Refunded).
 
 ## Tech stack
-Solidity 0.8.24 · Foundry · OpenZeppelin · TypeScript · viem · wagmi · RainbowKit ·
-Next.js 15 · Fastify · Anthropic Claude (`@anthropic-ai/sdk`) · zod · Supabase · IPFS/Pinata ·
-Base Sepolia (`chainId 84532`).
+Solidity 0.8.24 · Foundry · OpenZeppelin (ERC20/721/1155/Votes/Governor/Timelock) · TypeScript ·
+viem · wagmi · RainbowKit · Next.js 15 · Tailwind · Fastify · Anthropic Claude
+(`@anthropic-ai/sdk`) · zod · Supabase · IPFS/Pinata · TanStack Query · Base Sepolia (`chainId 84532`).
 
 ## Repository
 - Code: this repo (GitHub link goes here at submission).
 - Architecture: [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md)
-- Interface spec: [`docs/SPEC.md`](./SPEC.md)
+- Interface specs: [`docs/SPEC.md`](./SPEC.md) · [`docs/SPEC2.md`](./SPEC2.md) · [`docs/SPEC3.md`](./SPEC3.md)
+- Web design system: [`docs/WEB_DESIGN.md`](./WEB_DESIGN.md)
+- Roadmap: [`docs/ROADMAP.md`](./ROADMAP.md)
 - Demo script: [`docs/DEMO.md`](./DEMO.md)
 - Reproducible proof: `scripts/local-e2e.sh`
 
