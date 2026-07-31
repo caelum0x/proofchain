@@ -10,7 +10,33 @@ const pkgRoot = join(__dirname, "..");
 const outDir = join(pkgRoot, "out");
 const sharedAbisDir = join(pkgRoot, "..", "shared", "src", "abis");
 
-const CONTRACTS = ["ProvenanceRegistry", "AttestationRegistry", "SettlementEscrow", "MockUSDC"];
+const CONTRACTS = [
+  // root
+  "ProvenanceRegistry", "AttestationRegistry", "SettlementEscrow", "MockUSDC",
+  // M0 core
+  "AddressBook", "Pauser",
+  // M1 provenance
+  "CheckpointOracle", "ProvenanceFactory", "BatchMetadataStore",
+  // M2 payments / settlement
+  "StablecoinRegistry", "FeeManager", "Treasury", "PaymentRouter", "EscrowFactory", "SettlementRouter",
+  // M3 identity
+  "OrganizationRegistry", "SupplierRegistry", "BuyerRegistry", "CarrierRegistry", "KYCRegistry", "IdentityResolver",
+  // M4 reputation & bonds
+  "ReputationEngine", "SupplierBond", "StakeManager", "SlashingController", "ScoreOracle",
+  // M5 invoice financing / RWA
+  "InvoiceNFT", "ReceivableRegistry", "InvoiceFinancing", "FinancingPool", "LenderVault",
+  "DiscountCalculator", "YieldDistributor", "RepaymentController",
+  // M6 insurance
+  "InsurancePool", "PolicyManager", "ClaimsProcessor", "PremiumCalculator", "RiskPool",
+  // M7 disputes & governance
+  "DisputeArbitration", "ArbiterStaking", "GovernanceToken", "ProofChainGovernor", "ProofChainTimelock", "ProposalRegistry",
+  // M8 tokenization & ESG
+  "BatchNFT", "WarehouseReceipt", "CarbonCreditToken", "ESGRegistry", "SustainabilityOracle", "OffsetMarketplace",
+  // M9 marketplace
+  "ListingRegistry", "FinancingMarketplace", "AuctionHouse", "OrderBook", "BidManager",
+  // M10 rewards & loyalty
+  "LoyaltyPoints", "RewardsDistributor", "StakingRewards", "ReferralProgram", "EmissionsController",
+];
 
 function loadAbi(name) {
   const artifactPath = join(outDir, `${name}.sol`, `${name}.json`);

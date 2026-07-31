@@ -5,6 +5,7 @@ import { Test } from "forge-std/Test.sol";
 import { ProvenanceRegistry } from "../src/ProvenanceRegistry.sol";
 import { AttestationRegistry } from "../src/AttestationRegistry.sol";
 import { SettlementEscrow } from "../src/SettlementEscrow.sol";
+import { ISettlementEscrow } from "../src/interfaces/ISettlementEscrow.sol";
 import { MockUSDC } from "../src/MockUSDC.sol";
 
 /// @notice Full lifecycle: register -> checkpoint -> attest -> fund -> settle release.
@@ -64,7 +65,7 @@ contract EndToEndTest is Test {
         // 5. Anyone settles -> released to supplier.
         escrow.settle(BATCH);
 
-        assertEq(uint8(escrow.getDeal(BATCH).state), uint8(SettlementEscrow.DealState.Released));
+        assertEq(uint8(escrow.getDeal(BATCH).state), uint8(ISettlementEscrow.DealState.Released));
         assertEq(usdc.balanceOf(supplier), AMOUNT);
         assertEq(usdc.balanceOf(address(escrow)), 0);
     }
@@ -83,12 +84,12 @@ contract EndToEndTest is Test {
         vm.prank(agent);
         att.attest(BATCH, 3000, VHASH, "ipfs://verdict-42");
         escrow.settle(BATCH);
-        assertEq(uint8(escrow.getDeal(BATCH).state), uint8(SettlementEscrow.DealState.Disputed));
+        assertEq(uint8(escrow.getDeal(BATCH).state), uint8(ISettlementEscrow.DealState.Disputed));
 
         // Admin resolves dispute -> refund buyer.
         vm.prank(admin);
         escrow.refund(BATCH);
-        assertEq(uint8(escrow.getDeal(BATCH).state), uint8(SettlementEscrow.DealState.Refunded));
+        assertEq(uint8(escrow.getDeal(BATCH).state), uint8(ISettlementEscrow.DealState.Refunded));
         assertEq(usdc.balanceOf(buyer), AMOUNT);
     }
 }

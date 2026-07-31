@@ -17,7 +17,16 @@ import { CONTRACTS } from "@proofchain/shared";
 // Verdict types shared between the agent output and this UI.
 import type { VerificationVerdict, Finding } from "@proofchain/shared";
 
-import { env } from "./env";
+import { env, BASE_SEPOLIA_CHAIN_ID } from "./env";
+import {
+  ALL_CONTRACT_NAMES,
+  isContractName,
+  type ContractName as PlatformContractName,
+} from "./contract-names";
+// Bundled Base-Sepolia deployment manifest (mirrors
+// packages/contracts/deployments/base-sepolia.json). Refresh via
+// scripts/gen-abis.sh. A flat { ContractName: address } map.
+import baseSepoliaDeployment from "./deployments/base-sepolia.json";
 
 export type { VerificationVerdict, Finding };
 
@@ -86,3 +95,71 @@ export const areCoreContractsDeployed =
   Boolean(contractAddresses.provenanceRegistry) &&
   Boolean(contractAddresses.attestationRegistry) &&
   Boolean(contractAddresses.settlementEscrow);
+
+// ───────────────────────────────────────────────────────────────────────────
+// Platform-wide address resolution (all ~60 contracts from SPEC2).
+//
+// The four core contracts continue to resolve through `resolveContractAddresses`
+// above (shared `CONTRACTS` + env overrides). Every other module contract is
+// resolved from the bundled Base-Sepolia deployment manifest, chain-gated so we
+// never surface Base-Sepolia addresses on a mismatched network. Each address is
+// validated + checksummed at this boundary — we never trust the raw JSON shape.
+// ───────────────────────────────────────────────────────────────────────────
+
+/** All resolved platform addresses, keyed by canonical contract name. */
+export type AllContractAddresses = Readonly<Partial<Record<PlatformContractName, Address>>>;
+
+const manifestSchema = z.record(z.string(), z.string());
+
+/** Parse + checksum the bundled manifest into a validated name→address map. */
+function parseManifest(raw: unknown): Partial<Record<PlatformContractName, Address>> {
+  const parsed = manifestSchema.safeParse(raw);
+  if (!parsed.success) return {};
+  const out: Partial<Record<PlatformContractName, Address>> = {};
+  for (const [key, value] of Object.entries(parsed.data)) {
+    if (!isContractName(key)) continue;
+    if (!isAddress(value)) continue;
+    const checksummed = getAddress(value);
+    if (checksummed === zeroAddress) continue;
+    out[key] = checksummed;
+  }
+  return out;
+}
+
+/**
+ * Resolve deployed addresses for EVERY platform contract on the active chain.
+ * Layering: bundled manifest (chain-gated) is the base; the four core contracts
+ * from `resolveContractAddresses` win on top (they honor env overrides). Returns
+ * a partial map — undefined entries mean "not deployed", which the UI renders as
+ * an actionable state instead of crashing.
+ */
+export function resolveAllContractAddresses(
+  chainId: number = env.chainId,
+): AllContractAddresses {
+  const fromManifest =
+    chainId === BASE_SEPOLIA_CHAIN_ID ? parseManifest(baseSepoliaDeployment) : {};
+
+  const core = resolveContractAddresses(chainId);
+  const coreByName: Partial<Record<PlatformContractName, Address>> = {
+    ProvenanceRegistry: core.provenanceRegistry,
+    AttestationRegistry: core.attestationRegistry,
+    SettlementEscrow: core.settlementEscrow,
+    MockUSDC: core.mockUsdc,
+  };
+
+  const out: Partial<Record<PlatformContractName, Address>> = { ...fromManifest };
+  for (const name of ALL_CONTRACT_NAMES) {
+    const override = coreByName[name];
+    if (override) out[name] = override;
+  }
+  return Object.freeze(out);
+}
+
+/** Memoised resolution for the active chain. */
+export const allContractAddresses: AllContractAddresses =
+  resolveAllContractAddresses();
+
+/** Non-throwing single lookup by canonical contract name. */
+export function getResolvedAddress(name: PlatformContractName): Address | undefined {
+  return allContractAddresses[name];
+}

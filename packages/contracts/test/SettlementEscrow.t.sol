@@ -9,6 +9,7 @@ import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 import { ProvenanceRegistry } from "../src/ProvenanceRegistry.sol";
 import { AttestationRegistry } from "../src/AttestationRegistry.sol";
 import { SettlementEscrow } from "../src/SettlementEscrow.sol";
+import { ISettlementEscrow } from "../src/interfaces/ISettlementEscrow.sol";
 import { MockUSDC } from "../src/MockUSDC.sol";
 import { ReentrantToken } from "./mocks/ReentrantToken.sol";
 
@@ -68,11 +69,11 @@ contract SettlementEscrowTest is Test {
     }
 
     function test_Constructor_RevertsZeroAddress() public {
-        vm.expectRevert(SettlementEscrow.ZeroAddress.selector);
+        vm.expectRevert(ISettlementEscrow.ZeroAddress.selector);
         new SettlementEscrow(address(0), address(att), address(prov));
-        vm.expectRevert(SettlementEscrow.ZeroAddress.selector);
+        vm.expectRevert(ISettlementEscrow.ZeroAddress.selector);
         new SettlementEscrow(admin, address(0), address(prov));
-        vm.expectRevert(SettlementEscrow.ZeroAddress.selector);
+        vm.expectRevert(ISettlementEscrow.ZeroAddress.selector);
         new SettlementEscrow(admin, address(att), address(0));
     }
 
@@ -94,13 +95,13 @@ contract SettlementEscrowTest is Test {
 
     function test_SetPassThreshold_RevertsInvalid() public {
         vm.prank(admin);
-        vm.expectRevert(abi.encodeWithSelector(SettlementEscrow.InvalidThreshold.selector, uint16(10_001)));
+        vm.expectRevert(abi.encodeWithSelector(ISettlementEscrow.InvalidThreshold.selector, uint16(10_001)));
         escrow.setPassThreshold(10_001);
     }
 
     function test_SetPassThreshold_RevertsZero() public {
         vm.prank(admin);
-        vm.expectRevert(abi.encodeWithSelector(SettlementEscrow.InvalidThreshold.selector, uint16(0)));
+        vm.expectRevert(abi.encodeWithSelector(ISettlementEscrow.InvalidThreshold.selector, uint16(0)));
         escrow.setPassThreshold(0);
     }
 
@@ -114,8 +115,8 @@ contract SettlementEscrowTest is Test {
         vm.prank(buyer);
         escrow.fund(BATCH, supplier, address(usdc), AMOUNT);
 
-        SettlementEscrow.Deal memory d = escrow.getDeal(BATCH);
-        assertEq(uint8(d.state), uint8(SettlementEscrow.DealState.Funded));
+        ISettlementEscrow.Deal memory d = escrow.getDeal(BATCH);
+        assertEq(uint8(d.state), uint8(ISettlementEscrow.DealState.Funded));
         assertEq(d.buyer, buyer);
         assertEq(d.supplier, supplier);
         assertEq(d.amount, AMOUNT);
@@ -125,40 +126,40 @@ contract SettlementEscrowTest is Test {
 
     function test_Fund_RevertsZeroAmount() public {
         vm.prank(buyer);
-        vm.expectRevert(SettlementEscrow.ZeroAmount.selector);
+        vm.expectRevert(ISettlementEscrow.ZeroAmount.selector);
         escrow.fund(BATCH, supplier, address(usdc), 0);
     }
 
     function test_Fund_RevertsZeroSupplier() public {
         vm.prank(buyer);
-        vm.expectRevert(SettlementEscrow.ZeroAddress.selector);
+        vm.expectRevert(ISettlementEscrow.ZeroAddress.selector);
         escrow.fund(BATCH, address(0), address(usdc), AMOUNT);
     }
 
     function test_Fund_RevertsZeroToken() public {
         vm.prank(buyer);
-        vm.expectRevert(SettlementEscrow.ZeroAddress.selector);
+        vm.expectRevert(ISettlementEscrow.ZeroAddress.selector);
         escrow.fund(BATCH, supplier, address(0), AMOUNT);
     }
 
     function test_Fund_RevertsUnknownBatch() public {
         bytes32 unknown = keccak256("nope");
         vm.prank(buyer);
-        vm.expectRevert(abi.encodeWithSelector(SettlementEscrow.UnknownBatch.selector, unknown));
+        vm.expectRevert(abi.encodeWithSelector(ISettlementEscrow.UnknownBatch.selector, unknown));
         escrow.fund(unknown, supplier, address(usdc), AMOUNT);
     }
 
     function test_Fund_RevertsSupplierMismatch() public {
         // BATCH was registered by `supplier`; funding to a different address must revert.
         vm.prank(buyer);
-        vm.expectRevert(abi.encodeWithSelector(SettlementEscrow.SupplierMismatch.selector, BATCH));
+        vm.expectRevert(abi.encodeWithSelector(ISettlementEscrow.SupplierMismatch.selector, BATCH));
         escrow.fund(BATCH, stranger, address(usdc), AMOUNT);
     }
 
     function test_Fund_RevertsDealExists() public {
         vm.startPrank(buyer);
         escrow.fund(BATCH, supplier, address(usdc), AMOUNT);
-        vm.expectRevert(abi.encodeWithSelector(SettlementEscrow.DealExists.selector, BATCH));
+        vm.expectRevert(abi.encodeWithSelector(ISettlementEscrow.DealExists.selector, BATCH));
         escrow.fund(BATCH, supplier, address(usdc), AMOUNT);
         vm.stopPrank();
     }
@@ -183,7 +184,7 @@ contract SettlementEscrowTest is Test {
         // fund works again after unpause
         vm.prank(buyer);
         escrow.fund(BATCH, supplier, address(usdc), AMOUNT);
-        assertEq(uint8(escrow.getDeal(BATCH).state), uint8(SettlementEscrow.DealState.Funded));
+        assertEq(uint8(escrow.getDeal(BATCH).state), uint8(ISettlementEscrow.DealState.Funded));
     }
 
     function test_Pause_RevertsUnauthorized() public {
@@ -216,8 +217,8 @@ contract SettlementEscrowTest is Test {
         emit Released(BATCH, supplier, AMOUNT);
         escrow.settle(BATCH); // anyone
 
-        SettlementEscrow.Deal memory d = escrow.getDeal(BATCH);
-        assertEq(uint8(d.state), uint8(SettlementEscrow.DealState.Released));
+        ISettlementEscrow.Deal memory d = escrow.getDeal(BATCH);
+        assertEq(uint8(d.state), uint8(ISettlementEscrow.DealState.Released));
         assertEq(usdc.balanceOf(supplier), AMOUNT);
         assertEq(usdc.balanceOf(address(escrow)), 0);
     }
@@ -230,21 +231,21 @@ contract SettlementEscrowTest is Test {
         emit Disputed(BATCH, 5000);
         escrow.settle(BATCH);
 
-        SettlementEscrow.Deal memory d = escrow.getDeal(BATCH);
-        assertEq(uint8(d.state), uint8(SettlementEscrow.DealState.Disputed));
+        ISettlementEscrow.Deal memory d = escrow.getDeal(BATCH);
+        assertEq(uint8(d.state), uint8(ISettlementEscrow.DealState.Disputed));
         // Funds remain escrowed until dispute resolution.
         assertEq(usdc.balanceOf(address(escrow)), AMOUNT);
         assertEq(usdc.balanceOf(supplier), 0);
     }
 
     function test_Settle_RevertsNotFunded() public {
-        vm.expectRevert(abi.encodeWithSelector(SettlementEscrow.NotFunded.selector, BATCH));
+        vm.expectRevert(abi.encodeWithSelector(ISettlementEscrow.NotFunded.selector, BATCH));
         escrow.settle(BATCH);
     }
 
     function test_Settle_RevertsNotAttested() public {
         _fund();
-        vm.expectRevert(abi.encodeWithSelector(SettlementEscrow.NotAttested.selector, BATCH));
+        vm.expectRevert(abi.encodeWithSelector(ISettlementEscrow.NotAttested.selector, BATCH));
         escrow.settle(BATCH);
     }
 
@@ -252,7 +253,7 @@ contract SettlementEscrowTest is Test {
         _fund();
         _attest(9600);
         escrow.settle(BATCH);
-        vm.expectRevert(abi.encodeWithSelector(SettlementEscrow.AlreadySettled.selector, BATCH));
+        vm.expectRevert(abi.encodeWithSelector(ISettlementEscrow.AlreadySettled.selector, BATCH));
         escrow.settle(BATCH);
     }
 
@@ -285,21 +286,21 @@ contract SettlementEscrowTest is Test {
         bytes32 b = keccak256("at");
         _boundaryDeal(b, 7000); // == threshold -> release
         escrow.settle(b);
-        assertEq(uint8(escrow.getDeal(b).state), uint8(SettlementEscrow.DealState.Released));
+        assertEq(uint8(escrow.getDeal(b).state), uint8(ISettlementEscrow.DealState.Released));
     }
 
     function test_Boundary_JustBelowThreshold_Disputes() public {
         bytes32 b = keccak256("below");
         _boundaryDeal(b, 6999); // just below -> dispute
         escrow.settle(b);
-        assertEq(uint8(escrow.getDeal(b).state), uint8(SettlementEscrow.DealState.Disputed));
+        assertEq(uint8(escrow.getDeal(b).state), uint8(ISettlementEscrow.DealState.Disputed));
     }
 
     function test_Boundary_JustAboveThreshold_Releases() public {
         bytes32 b = keccak256("above");
         _boundaryDeal(b, 7001); // just above -> release
         escrow.settle(b);
-        assertEq(uint8(escrow.getDeal(b).state), uint8(SettlementEscrow.DealState.Released));
+        assertEq(uint8(escrow.getDeal(b).state), uint8(ISettlementEscrow.DealState.Released));
     }
 
     // ---------------------------------------------------------------------
@@ -316,8 +317,8 @@ contract SettlementEscrowTest is Test {
         vm.prank(admin);
         escrow.refund(BATCH);
 
-        SettlementEscrow.Deal memory d = escrow.getDeal(BATCH);
-        assertEq(uint8(d.state), uint8(SettlementEscrow.DealState.Refunded));
+        ISettlementEscrow.Deal memory d = escrow.getDeal(BATCH);
+        assertEq(uint8(d.state), uint8(ISettlementEscrow.DealState.Refunded));
         assertEq(usdc.balanceOf(buyer), AMOUNT);
         assertEq(usdc.balanceOf(address(escrow)), 0);
     }
@@ -325,7 +326,7 @@ contract SettlementEscrowTest is Test {
     function test_Refund_RevertsNotDisputed() public {
         _fund();
         vm.prank(admin);
-        vm.expectRevert(abi.encodeWithSelector(SettlementEscrow.NotDisputed.selector, BATCH));
+        vm.expectRevert(abi.encodeWithSelector(ISettlementEscrow.NotDisputed.selector, BATCH));
         escrow.refund(BATCH);
     }
 
@@ -367,7 +368,7 @@ contract SettlementEscrowTest is Test {
         escrow.settle(b);
 
         // Deal must remain Funded; no funds moved.
-        assertEq(uint8(escrow.getDeal(b).state), uint8(SettlementEscrow.DealState.Funded));
+        assertEq(uint8(escrow.getDeal(b).state), uint8(ISettlementEscrow.DealState.Funded));
         assertEq(evil.balanceOf(supplier), 0);
         assertEq(evil.balanceOf(address(escrow)), AMOUNT);
     }

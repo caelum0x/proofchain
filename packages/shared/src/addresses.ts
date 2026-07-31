@@ -17,23 +17,43 @@ export type ContractAddresses = Readonly<
   Partial<Record<ContractName, Address>>
 >;
 
-/** Env var overrides, checked before the deployment manifest. */
+/**
+ * Convert a PascalCase contract name to SCREAMING_SNAKE_CASE, correctly
+ * splitting acronym boundaries. Examples:
+ *   `MockUSDC`          -> `MOCK_USDC`
+ *   `SettlementEscrow`  -> `SETTLEMENT_ESCROW`
+ *   `KYCRegistry`       -> `KYC_REGISTRY`
+ *   `ProofChainGovernor`-> `PROOF_CHAIN_GOVERNOR`
+ */
+export function toScreamingSnakeCase(name: string): string {
+  return name
+    .replace(/([a-z0-9])([A-Z])/gu, "$1_$2")
+    .replace(/([A-Z]+)([A-Z][a-z])/gu, "$1_$2")
+    .toUpperCase();
+}
+
+/**
+ * Build the ordered list of env vars that can override a contract's address.
+ * Both a plain (server) and `NEXT_PUBLIC_`-prefixed (browser) variant are
+ * accepted, e.g. `SETTLEMENT_ESCROW_ADDRESS` and
+ * `NEXT_PUBLIC_SETTLEMENT_ESCROW_ADDRESS`.
+ */
+export function envOverridesFor(name: ContractName): readonly string[] {
+  const base = `${toScreamingSnakeCase(name)}_ADDRESS`;
+  return Object.freeze([base, `NEXT_PUBLIC_${base}`]);
+}
+
+/**
+ * Env var overrides per contract, checked before the deployment manifest.
+ * Generated from {@link CONTRACT_NAMES} so every contract — including all
+ * platform-expansion modules — is overridable without hand-maintaining a table.
+ */
 const ENV_OVERRIDES: Readonly<Record<ContractName, readonly string[]>> =
-  Object.freeze({
-    ProvenanceRegistry: [
-      "PROVENANCE_REGISTRY_ADDRESS",
-      "NEXT_PUBLIC_PROVENANCE_REGISTRY_ADDRESS",
-    ],
-    AttestationRegistry: [
-      "ATTESTATION_REGISTRY_ADDRESS",
-      "NEXT_PUBLIC_ATTESTATION_REGISTRY_ADDRESS",
-    ],
-    SettlementEscrow: [
-      "SETTLEMENT_ESCROW_ADDRESS",
-      "NEXT_PUBLIC_SETTLEMENT_ESCROW_ADDRESS",
-    ],
-    MockUSDC: ["MOCK_USDC_ADDRESS", "NEXT_PUBLIC_MOCK_USDC_ADDRESS"],
-  });
+  Object.freeze(
+    Object.fromEntries(
+      CONTRACT_NAMES.map((name) => [name, envOverridesFor(name)] as const),
+    ) as Record<ContractName, readonly string[]>,
+  );
 
 /** Env var that overrides the deployment manifest file path. */
 export const DEPLOYMENTS_PATH_ENV = "PROOFCHAIN_DEPLOYMENTS_FILE";

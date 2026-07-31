@@ -30,6 +30,26 @@ export type ParsedContractLog = Log & {
   readonly args: Record<string, unknown>;
 };
 
+/**
+ * Order in which contract ABIs are tried when decoding an unattributed log.
+ *
+ * Many contracts share event signatures (ERC20/ERC721 `Transfer`, AccessControl
+ * `RoleGranted`, ...), and a bare `topic0` cannot disambiguate them. The core
+ * settlement-flow contracts are tried FIRST so their events resolve to the
+ * expected contract; the remaining modules follow in their canonical order.
+ * `decodeContractEvent(name, log)` remains exact and is unaffected by this.
+ */
+const DECODE_PRIORITY: readonly ContractName[] = (() => {
+  const core: ContractName[] = [
+    "ProvenanceRegistry",
+    "AttestationRegistry",
+    "SettlementEscrow",
+    "MockUSDC",
+  ];
+  const rest = CONTRACT_NAMES.filter((n) => !core.includes(n));
+  return [...core, ...rest];
+})();
+
 const RawEventLogSchema = z.object({
   topics: z
     .array(HexSchema)
@@ -102,7 +122,7 @@ export function decodeContractEvent(
  */
 export function decodeProofchainLog(log: unknown): DecodedProofchainEvent {
   const raw = parseRawEventLog(log);
-  for (const contract of CONTRACT_NAMES) {
+  for (const contract of DECODE_PRIORITY) {
     const decoded = decodeContractEvent(contract, raw);
     if (decoded !== null) return decoded;
   }
@@ -120,7 +140,7 @@ export function tryDecodeProofchainLog(
   log: unknown,
 ): DecodedProofchainEvent | null {
   const raw = parseRawEventLog(log);
-  for (const contract of CONTRACT_NAMES) {
+  for (const contract of DECODE_PRIORITY) {
     const decoded = decodeContractEvent(contract, raw);
     if (decoded !== null) return decoded;
   }

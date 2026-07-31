@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 // Provide deterministic public env for modules that read it at import time.
 process.env.NEXT_PUBLIC_WALLETCONNECT_ID ||= "test-walletconnect-id";
 process.env.NEXT_PUBLIC_AGENT_API_URL ||= "http://agent.test";
+process.env.NEXT_PUBLIC_API_URL ||= "http://api.test";
 process.env.NEXT_PUBLIC_CHAIN_ID ||= "84532";
 
 // jsdom's Blob/File implementation omits the standard `arrayBuffer()` method

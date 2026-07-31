@@ -6,7 +6,15 @@
  * locally as typed constants so the web package is independently type-checkable
  * and buildable (loose coupling per the spec). Contract *addresses* and verdict
  * *types* are imported from `@proofchain/shared` — see `./shared.ts`.
+ *
+ * The four core ABIs below are hand-written `const` tuples for maximal wagmi
+ * type inference on the original supplier/buyer/verifier flows. Every OTHER
+ * platform contract (SPEC2 M0–M10) is available via `ABI_REGISTRY` / `getAbi`,
+ * bundled from the compiled artifacts (see `abis-generated/`).
  */
+import type { Abi } from "viem";
+import { GENERATED_ABIS } from "./abis-generated";
+import type { ContractName } from "./contract-names";
 
 export const provenanceRegistryAbi = [
   {
@@ -373,3 +381,15 @@ export const mockUsdcAbi = [
     anonymous: false,
   },
 ] as const;
+
+/**
+ * The full ABI registry for every platform contract, keyed by canonical name.
+ * Prefer the named `*Abi` consts above for the core contracts (better inference);
+ * use this / `getAbi(name)` for all other modules.
+ */
+export const ABI_REGISTRY = GENERATED_ABIS;
+
+/** Resolve a contract's ABI by canonical name. */
+export function getAbi(name: ContractName): Abi {
+  return GENERATED_ABIS[name] as Abi;
+}

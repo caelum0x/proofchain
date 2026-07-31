@@ -27,6 +27,10 @@ const clientEnvSchema = z.object({
     .string()
     .trim()
     .url("NEXT_PUBLIC_AGENT_API_URL must be a valid URL"),
+  apiUrl: z
+    .string()
+    .trim()
+    .url("NEXT_PUBLIC_API_URL must be a valid URL"),
   chainId: z.coerce
     .number()
     .int("NEXT_PUBLIC_CHAIN_ID must be an integer")
@@ -49,6 +53,7 @@ export type ClientEnv = z.infer<typeof clientEnvSchema>;
 const rawEnv = {
   walletConnectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID ?? "",
   agentApiUrl: process.env.NEXT_PUBLIC_AGENT_API_URL ?? "http://localhost:8080",
+  apiUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081",
   chainId: process.env.NEXT_PUBLIC_CHAIN_ID ?? String(BASE_SEPOLIA_CHAIN_ID),
   deployBlock: process.env.NEXT_PUBLIC_DEPLOY_BLOCK || undefined,
   rpcUrl: process.env.NEXT_PUBLIC_RPC_URL || undefined,
@@ -69,6 +74,9 @@ export const env: ClientEnv = parsed.success
       agentApiUrl: /^https?:\/\//.test(rawEnv.agentApiUrl)
         ? rawEnv.agentApiUrl
         : "http://localhost:8080",
+      apiUrl: /^https?:\/\//.test(rawEnv.apiUrl)
+        ? rawEnv.apiUrl
+        : "http://localhost:8081",
       chainId: Number(rawEnv.chainId) || BASE_SEPOLIA_CHAIN_ID,
       deployBlock: undefined,
       rpcUrl: undefined,
