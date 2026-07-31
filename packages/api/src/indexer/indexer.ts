@@ -13,8 +13,8 @@ import type { ChainReader, ContractSource } from '../lib/chain.js';
 import { ApiError, errorMessage } from '../lib/errors.js';
 import type { Db } from '../lib/db.js';
 import type { Logger } from '../logger.js';
-import { getHandler } from './handlers/index.js';
-import { groupFor, type DecodedEvent, type HandlerDeps } from './types.js';
+import { getHandler, routeContract } from './handlers/index.js';
+import { type DecodedEvent, type HandlerDeps } from './types.js';
 
 /** Persists the last fully-processed block per cursor key. */
 export interface CursorStore {
@@ -81,7 +81,7 @@ export const decodeLog = (
     });
     if (decoded.eventName === undefined) return null;
     return {
-      group: groupFor(source.name),
+      group: routeContract(source.name),
       contract: source.name,
       address: source.address,
       eventName: decoded.eventName,

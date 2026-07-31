@@ -44,12 +44,18 @@ export type Projector = (event: DecodedEvent, deps: HandlerDeps) => Promise<void
  * Build an {@link IndexerHandler} for a group: always audit, then optionally
  * project into a read-model table. Router-domain agents extend a group by
  * supplying a `project` function; the engine wiring never changes.
+ *
+ * `contracts` (optional) lists the contract names this handler owns. When set,
+ * the registry routes those contracts' events to this handler automatically, so
+ * a NEW domain needs only a handler file — no edit to `GROUP_BY_CONTRACT`.
  */
 export const makeHandler = (
   group: ContractGroup,
   project?: Projector,
+  contracts?: readonly string[],
 ): IndexerHandler => ({
   group,
+  ...(contracts !== undefined ? { contracts } : {}),
   async handle(event, deps) {
     await persistEvent(event, deps);
     if (project !== undefined) {

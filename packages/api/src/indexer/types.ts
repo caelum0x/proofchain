@@ -12,8 +12,17 @@ import type { ContractName } from '@proofchain/shared';
 import type { Db } from '../lib/db.js';
 import type { Logger } from '../logger.js';
 
-/** The module groups events are routed to (mirrors SPEC2 contract modules). */
-export type ContractGroup =
+/**
+ * A module/domain group an event is routed to. Kept OPEN (a `string`) rather
+ * than a closed union so a Fill agent can introduce a brand-new domain group
+ * (`tradefinance`, `dpp`, `logistics`, …) by ADDING a handler file alone — no
+ * edit to this union is required. The SPEC2 module groups below are the known,
+ * pre-wired values; treat {@link KnownContractGroup} as documentation.
+ */
+export type ContractGroup = string;
+
+/** The pre-wired SPEC2 module groups (M0–M10). New domains extend this freely. */
+export type KnownContractGroup =
   | 'core'
   | 'provenance'
   | 'settlement'
@@ -49,9 +58,17 @@ export interface HandlerDeps {
  * A per-group event handler. `handle` is called once per decoded event whose
  * contract maps to `group`. Handlers are idempotent (upsert on natural keys) so
  * re-processing a block range on restart never duplicates rows.
+ *
+ * A handler MAY declare the `contracts` it owns; the registry (`handlers/index.ts`)
+ * derives the contract→group routing from those declarations, so a Fill agent
+ * onboarding a NEW domain does NOT have to touch {@link GROUP_BY_CONTRACT} — the
+ * handler file is self-describing. Declarations here take precedence over the
+ * static table below.
  */
 export interface IndexerHandler {
   readonly group: ContractGroup;
+  /** Contract names this handler owns (feeds the derived routing table). */
+  readonly contracts?: readonly string[];
   handle(event: DecodedEvent, deps: HandlerDeps): Promise<void>;
 }
 
