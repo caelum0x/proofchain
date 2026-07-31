@@ -17,9 +17,13 @@
   "files": [
     "dist",
     "schema.sql",
+    "schema",
     "README.md"
   ],
   "scripts": {
+    "barrels": "node scripts/gen-barrels.mjs",
+    "schema:build": "node scripts/compose-schema.mjs",
+    "schema:check": "node scripts/compose-schema.mjs --check",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

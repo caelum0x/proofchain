@@ -11,14 +11,10 @@
  */
 import { AppError } from '../errors.js';
 import { createFinding } from '../domain/findings.js';
-import {
-  buildToolDefinitions,
-  finalizeVerdictInput,
-  getProvenanceInput,
-  parseDocumentInput,
-  recordFindingInput,
-  TOOL_NAMES,
-} from '../anthropic/tools.js';
+// Side-effect import: registers the four builtin tools into the tool registry.
+import '../tools/index.js';
+import { buildToolDefinitions, toolRegistry } from '../tools/registry.js';
+import { documentDigest, provenanceSummary } from '../tools/context.js';
 import type {
   AnthropicClient,
   MessageParam,
@@ -61,20 +57,6 @@ const SYSTEM_PROMPT =
   'summary. Be conservative: use critical severity only for provenance-breaking ' +
   'fraud. Do not fabricate findings.';
 
-const provenanceSummary = (p: ProvenanceData): unknown => ({
-  batchId: p.batchId,
-  exists: p.exists,
-  supplier: p.supplier,
-  originHash: p.originHash,
-  metadataURI: p.metadataURI,
-  createdAt: p.createdAt,
-  checkpointCount: p.checkpoints.length,
-  checkpoints: p.checkpoints,
-});
-
-const documentDigest = (docs: ParsedDocument[]): unknown =>
-  docs.map((d) => ({ index: d.index, name: d.name, docType: d.docType }));
-
 const toolResult = (
   id: string,
   content: unknown,
@@ -100,11 +82,11 @@ interface ToolOutcome {
 }
 
 /**
- * Dispatch a single tool_use block PURELY: returns the tool_result to feed back
- * to the model plus the NEXT loop state (never mutates its input). This makes
- * each iteration's state transition explicit and referentially transparent.
- * Validation failures are returned to the model as tool errors (is_error) so it
- * can correct — they never crash the loop.
+ * Dispatch a single tool_use block PURELY through the tool REGISTRY: returns the
+ * tool_result to feed back to the model plus the NEXT loop state (never mutates
+ * its input). Each iteration's state transition stays explicit and referentially
+ * transparent. Unknown tools and zod validation failures are returned to the
+ * model as tool errors (is_error) so it can correct — they never crash the loop.
  */
 const handleToolUse = (
   block: ToolUseBlock,
@@ -112,71 +94,33 @@ const handleToolUse = (
   state: LoopState,
 ): ToolOutcome => {
   const next: LoopState = { ...state, toolCalls: state.toolCalls + 1 };
-  switch (block.name) {
-    case TOOL_NAMES.getProvenance: {
-      const parsed = getProvenanceInput.safeParse(block.input);
-      if (!parsed.success) {
-        return { result: toolResult(block.id, 'Invalid get_provenance input', true), state: next };
-      }
-      return { result: toolResult(block.id, provenanceSummary(ctx.provenance)), state: next };
-    }
-    case TOOL_NAMES.parseDocument: {
-      const parsed = parseDocumentInput.safeParse(block.input);
-      if (!parsed.success) {
-        return { result: toolResult(block.id, 'Invalid parse_document input', true), state: next };
-      }
-      const doc = ctx.documents[parsed.data.index];
-      if (doc === undefined) {
-        return {
-          result: toolResult(block.id, `No document at index ${parsed.data.index}`, true),
-          state: next,
-        };
-      }
-      return {
-        result: toolResult(block.id, {
-          index: doc.index,
-          name: doc.name,
-          docType: doc.docType,
-          sha256: doc.sha256,
-          fields: doc.fields,
-        }),
-        state: next,
-      };
-    }
-    case TOOL_NAMES.recordFinding: {
-      const parsed = recordFindingInput.safeParse(block.input);
-      if (!parsed.success) {
-        return { result: toolResult(block.id, 'Invalid record_finding input', true), state: next };
-      }
-      const finding = createFinding(
-        parsed.data.code,
-        parsed.data.severity,
-        parsed.data.message,
-        parsed.data.evidence,
-      );
-      return {
-        result: toolResult(block.id, { recorded: true }),
-        state: { ...next, findings: [...next.findings, finding] },
-      };
-    }
-    case TOOL_NAMES.finalizeVerdict: {
-      const parsed = finalizeVerdictInput.safeParse(block.input);
-      if (!parsed.success) {
-        return { result: toolResult(block.id, 'Invalid finalize_verdict input', true), state: next };
-      }
-      return {
-        result: toolResult(block.id, { accepted: true }),
-        state: {
-          ...next,
-          finalized: true,
-          modelScore: parsed.data.score,
-          summary: parsed.data.summary,
-        },
-      };
-    }
-    default:
-      return { result: toolResult(block.id, `Unknown tool: ${block.name}`, true), state: next };
+
+  const tool = toolRegistry.get(block.name);
+  if (tool === undefined) {
+    return {
+      result: toolResult(block.id, `Unknown tool: ${block.name}`, true),
+      state: next,
+    };
   }
+
+  const parsed = tool.inputSchema.safeParse(block.input);
+  if (!parsed.success) {
+    return {
+      result: toolResult(block.id, `Invalid ${block.name} input`, true),
+      state: next,
+    };
+  }
+
+  const exec = tool.handle(parsed.data, ctx, next);
+  // Merge the immutable patch; `findings` is readonly on ToolLoopState, so the
+  // assertion re-narrows the spread result back to the mutable LoopState shape.
+  const patchedState = (
+    exec.patch !== undefined ? { ...next, ...exec.patch } : next
+  ) as LoopState;
+  return {
+    result: toolResult(block.id, exec.content, exec.isError ?? false),
+    state: patchedState,
+  };
 };
 
 export const runVerificationLoop = async (

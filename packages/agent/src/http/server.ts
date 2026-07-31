@@ -12,6 +12,7 @@ import { AppError, fail, toAppError } from '../errors.js';
 import { registerHealthRoute } from './routes/health.js';
 import { registerJobsRoute } from './routes/jobs.js';
 import { registerVerifyRoute } from './routes/verify.js';
+import { registerPipelineRoutes } from './routes/pipelines.js';
 import type { AppDeps } from './types.js';
 
 export const buildServer = async (
@@ -64,6 +65,9 @@ export const buildServer = async (
   registerHealthRoute(app, deps);
   registerVerifyRoute(app, deps);
   registerJobsRoute(app, deps);
+  if (deps.pipelines !== undefined) {
+    registerPipelineRoutes(app, deps.pipelines);
+  }
 
   return app;
 };

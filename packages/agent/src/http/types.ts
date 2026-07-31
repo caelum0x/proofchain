@@ -7,6 +7,7 @@ import type { ChainClient } from '../chain/client.js';
 import type { JobStore } from '../jobs/store.js';
 import type { Logger } from '../logger.js';
 import type { Verifier } from '../verifier.js';
+import type { PipelineHttpDeps } from './pipeline-deps.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -14,4 +15,10 @@ export interface AppDeps {
   verifier: Verifier;
   jobStore: JobStore;
   chain: ChainClient;
+  /**
+   * Optional domain-pipeline dependencies. When present, the server mounts the
+   * `/pipelines/*` routes (financing, insurance, dpp, compliance, quality, esg,
+   * credit). Absent in the minimal verification-only configuration.
+   */
+  pipelines?: PipelineHttpDeps;
 }

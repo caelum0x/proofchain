@@ -9,6 +9,7 @@
 import { createFinding } from './findings.js';
 import type { CrossCheckInput, ParsedDocument } from './types.js';
 import type { Finding } from '../shared.js';
+import type { CrossCheck } from '../checks/registry.js';
 
 /** Two monetary values are "equal" within 0.5% relative or 1 cent absolute. */
 const moneyEqual = (a: number, b: number): boolean => {
@@ -217,18 +218,69 @@ const ruleCheckpointOrder = (input: CrossCheckInput): Finding[] => {
   return [];
 };
 
-const RULES: ReadonlyArray<(input: CrossCheckInput) => Finding[]> = [
-  ruleNoDocuments,
-  ruleProvenancePresence,
-  ruleInvoiceTotals,
-  ruleLineItemMath,
-  ruleOriginHash,
-  ruleQuantityConsistency,
-  ruleSupplierConsistency,
-  ruleDateConsistency,
-  ruleCheckpointOrder,
+/**
+ * The builtin cross-checks as `CrossCheck` objects. These are registered into
+ * the check registry (see src/checks/core.ts) so the verification pipeline and
+ * any Fill domain rule packs share one execution path. Order matches the
+ * original RULES array so findings remain order-stable.
+ */
+export const CORE_CHECKS: readonly CrossCheck[] = [
+  {
+    code: 'core.no_documents',
+    domain: 'structural',
+    description: 'At least one document must be supplied for verification.',
+    run: ruleNoDocuments,
+  },
+  {
+    code: 'core.provenance_presence',
+    domain: 'provenance',
+    description: 'Batch must exist on-chain and carry a checkpoint trail.',
+    run: ruleProvenancePresence,
+  },
+  {
+    code: 'core.invoice_totals',
+    domain: 'trade',
+    description: 'Invoice line items must sum to the stated total.',
+    run: ruleInvoiceTotals,
+  },
+  {
+    code: 'core.line_item_math',
+    domain: 'trade',
+    description: 'Each line item amount must equal quantity × unit price.',
+    run: ruleLineItemMath,
+  },
+  {
+    code: 'core.origin_hash',
+    domain: 'provenance',
+    description: 'Document origin hash must match the on-chain origin hash.',
+    run: ruleOriginHash,
+  },
+  {
+    code: 'core.quantity_consistency',
+    domain: 'quantity',
+    description: 'Declared quantities must agree across documents.',
+    run: ruleQuantityConsistency,
+  },
+  {
+    code: 'core.supplier_consistency',
+    domain: 'trade',
+    description: 'Supplier/party names must be consistent across documents.',
+    run: ruleSupplierConsistency,
+  },
+  {
+    code: 'core.date_consistency',
+    domain: 'temporal',
+    description: 'Documents must not predate on-chain batch registration.',
+    run: ruleDateConsistency,
+  },
+  {
+    code: 'core.checkpoint_order',
+    domain: 'provenance',
+    description: 'On-chain checkpoint timestamps must be non-decreasing.',
+    run: ruleCheckpointOrder,
+  },
 ];
 
-/** Run every cross-check rule and collect all findings (order-stable). */
+/** Run every builtin cross-check and collect all findings (order-stable). */
 export const runCrossChecks = (input: CrossCheckInput): Finding[] =>
-  RULES.flatMap((rule) => rule(input));
+  CORE_CHECKS.flatMap((check) => check.run(input));

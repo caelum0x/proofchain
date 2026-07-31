@@ -29,7 +29,18 @@ export interface ParsedDocumentFields {
   parties?: string[];
 }
 
-export type DocumentType = 'invoice' | 'bill_of_lading' | 'unknown';
+/**
+ * The document types the base engine ships with. Fill agents add more by
+ * registering a parser (see src/parsers/registry.ts) — the registry, not this
+ * union, is the runtime source of truth for known types.
+ */
+export type KnownDocumentType = 'invoice' | 'bill_of_lading' | 'unknown';
+
+/**
+ * A document type id. Extensible: known literals keep editor autocomplete while
+ * `(string & {})` admits any type a registered parser declares.
+ */
+export type DocumentType = KnownDocumentType | (string & {});
 
 /** A supplied document after parsing. */
 export interface ParsedDocument {

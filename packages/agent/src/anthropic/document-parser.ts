@@ -1,52 +1,35 @@
 /**
- * Document parser abstraction.
+ * Document parser service.
  *
- * `DocumentParser` turns a raw supplied document into structured fields. The
- * production implementation uses Claude vision (a cheap sub-step model) to
- * extract JSON; it is injected, so tests substitute a deterministic stub with
- * no network. All model output is validated with zod before use.
+ * `DocumentParser` (this service) turns a raw supplied document into structured
+ * fields using Claude vision to extract JSON. Classification and per-doc-type
+ * field validation are delegated to the PARSER REGISTRY (src/parsers), so new
+ * document types are added by dropping in a parser file — never by editing this
+ * service. All model output is validated with zod before use.
  */
-import { z } from 'zod';
 import { modelError, errorMessage } from '../errors.js';
 import { DOCUMENT_FETCH_TIMEOUT_MS } from '../config/constants.js';
 import { sha256Hex } from '../util/hashing.js';
+// Side-effect import: registers the builtin parsers (invoice, bol, generic).
+import '../parsers/index.js';
+import {
+  documentTypes,
+  parserFor,
+  resolveDocType,
+  type RawDocument,
+} from '../parsers/registry.js';
 import type { AnthropicClient, TextBlock } from './client.js';
-import type {
-  DocumentType,
-  InputDocument,
-  ParsedDocument,
-  ParsedDocumentFields,
-} from '../domain/types.js';
+import type { InputDocument, ParsedDocument } from '../domain/types.js';
 
 export interface DocumentParser {
   parse(doc: InputDocument, index: number): Promise<ParsedDocument>;
 }
 
-const lineItemSchema = z.object({
-  description: z.string().default(''),
-  quantity: z.number(),
-  unitPrice: z.number(),
-  amount: z.number(),
-});
-
-const fieldsSchema = z.object({
-  docType: z.enum(['invoice', 'bill_of_lading', 'unknown']).default('unknown'),
-  total: z.number().optional(),
-  currency: z.string().optional(),
-  lineItems: z.array(lineItemSchema).optional(),
-  quantity: z.number().optional(),
-  supplierName: z.string().optional(),
-  buyerName: z.string().optional(),
-  originHash: z.string().optional(),
-  date: z.string().optional(),
-  parties: z.array(z.string()).optional(),
-});
-
-const EXTRACTION_PROMPT =
-  'You are a document extraction engine for shipment paperwork (invoices, ' +
-  'bills of lading). Extract fields and respond with ONLY a single JSON object ' +
-  'matching this shape (omit unknown fields): {"docType":"invoice"|' +
-  '"bill_of_lading"|"unknown","total":number,"currency":string,"lineItems":' +
+const buildExtractionPrompt = (): string =>
+  'You are a document extraction engine for shipment paperwork. Classify the ' +
+  `document type (one of: ${documentTypes().join(', ')}) and extract fields. ` +
+  'Respond with ONLY a single JSON object matching this shape (omit unknown ' +
+  'fields): {"docType":string,"total":number,"currency":string,"lineItems":' +
   '[{"description":string,"quantity":number,"unitPrice":number,"amount":number}]' +
   ',"quantity":number,"supplierName":string,"buyerName":string,"originHash":' +
   'string,"date":"ISO-8601","parties":[string]}. No prose, no code fences.';
@@ -65,6 +48,15 @@ const extractJsonObject = (text: string): unknown => {
       cause: errorMessage(err),
     });
   }
+};
+
+/** The model's declared docType, if it supplied a usable string. */
+const declaredDocType = (raw: unknown): string | undefined => {
+  if (typeof raw === 'object' && raw !== null && 'docType' in raw) {
+    const value = (raw as { docType: unknown }).docType;
+    if (typeof value === 'string' && value.length > 0) return value;
+  }
+  return undefined;
 };
 
 const loadBytes = async (doc: InputDocument): Promise<Uint8Array> => {
@@ -94,23 +86,28 @@ const loadBytes = async (doc: InputDocument): Promise<Uint8Array> => {
   throw modelError('Document has neither dataBase64 nor url');
 };
 
-/**
- * Build the user content for the extraction request. Images/PDF go as native
- * blocks; text-ish documents are inlined. We keep this simple: the model is
- * asked for JSON regardless of input modality.
- */
-const buildUserText = (doc: InputDocument, bytes: Uint8Array): string => {
+/** UTF-8 body when the document is textual; undefined for binary. */
+const textualBody = (doc: InputDocument, bytes: Uint8Array): string | undefined => {
   const isTextual =
     doc.mimeType.startsWith('text/') ||
     doc.mimeType === 'application/json' ||
     doc.mimeType === 'application/xml';
-  if (isTextual) {
-    const body = Buffer.from(bytes).toString('utf8').slice(0, 20_000);
-    return `${EXTRACTION_PROMPT}\n\nDocument name: ${doc.name}\n---\n${body}`;
+  if (!isTextual) return undefined;
+  return Buffer.from(bytes).toString('utf8').slice(0, 20_000);
+};
+
+const buildUserText = (
+  doc: InputDocument,
+  body: string | undefined,
+  byteLength: number,
+): string => {
+  const prompt = buildExtractionPrompt();
+  if (body !== undefined) {
+    return `${prompt}\n\nDocument name: ${doc.name}\n---\n${body}`;
   }
   return (
-    `${EXTRACTION_PROMPT}\n\nDocument name: ${doc.name} (binary ${doc.mimeType}, ` +
-    `${bytes.byteLength} bytes). Extract any fields legible from metadata.`
+    `${prompt}\n\nDocument name: ${doc.name} (binary ${doc.mimeType}, ` +
+    `${byteLength} bytes). Extract any fields legible from metadata.`
   );
 };
 
@@ -122,11 +119,14 @@ export const createClaudeDocumentParser = (
   async parse(doc, index) {
     const bytes = await loadBytes(doc);
     const sha256 = sha256Hex(bytes);
+    const body = textualBody(doc, bytes);
 
     const message = await client.createMessage({
       model,
       maxTokens,
-      messages: [{ role: 'user', content: buildUserText(doc, bytes) }],
+      messages: [
+        { role: 'user', content: buildUserText(doc, body, bytes.byteLength) },
+      ],
     });
 
     const text = message.content
@@ -134,20 +134,31 @@ export const createClaudeDocumentParser = (
       .map((b) => b.text)
       .join('\n');
 
-    const parsed = fieldsSchema.safeParse(extractJsonObject(text));
+    const raw = extractJsonObject(text);
+
+    // Classify via the registry (honour the model's type when registered, else
+    // detect), then validate against that doc type's schema.
+    const rawDoc: RawDocument = {
+      name: doc.name,
+      mimeType: doc.mimeType,
+      ...(body !== undefined ? { text: body } : {}),
+      sizeBytes: bytes.byteLength,
+    };
+    const docType = resolveDocType(declaredDocType(raw), rawDoc);
+    const parser = parserFor(docType);
+
+    const parsed = parser.schema.safeParse(raw);
     if (!parsed.success) {
       throw modelError('Document parser output failed validation', {
         issues: parsed.error.issues,
       });
     }
 
-    const { docType, ...rest } = parsed.data;
-    const fields: ParsedDocumentFields = rest;
     return {
       index,
       name: doc.name,
-      docType: docType as DocumentType,
-      fields,
+      docType,
+      fields: parsed.data,
       sha256,
     };
   },

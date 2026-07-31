@@ -9,11 +9,22 @@ import { createClaudeDocumentParser } from './anthropic/document-parser.js';
 import { createViemChainClient } from './chain/viem-client.js';
 import { loadConfig } from './config/env.js';
 import { createInMemoryJobStore } from './jobs/store.js';
+import { createInMemoryPipelineJobStore } from './jobs/pipeline-store.js';
 import { createLogger } from './logger.js';
 import { buildServer } from './http/server.js';
 import { createPinner } from './verdict/pinner.js';
 import { createVerifier } from './verifier.js';
 import { AppError } from './errors.js';
+import type { PipelineHttpDeps } from './http/pipeline-deps.js';
+// Opt the "risk-scoring" category manifests into the shared registries at wiring
+// time. These side-effect imports register the extended risk lenses (credit,
+// counterparty, route, esg, liquidity) and scoring dimensions (authenticity,
+// consistency, compliance, completeness, esg, risk, reconciled) alongside the
+// foundation builtins, so the running service's registries collect EVERY module.
+// The foundation barrels (risk/index.ts, scoring/index.ts) own only the builtins
+// and are never edited; the integrator wires the manifests exactly here.
+import './risk/models.js';
+import './scoring/dimensions.js';
 
 const main = async (): Promise<void> => {
   const config = loadConfig();
@@ -50,7 +61,36 @@ const main = async (): Promise<void> => {
     },
   });
 
-  const app = await buildServer({ config, logger, verifier, jobStore, chain });
+  // Domain-pipeline routes (financing, insurance, dpp, compliance, quality,
+  // esg, credit) share the parser + orchestrator + chain-read wiring and run
+  // the Claude tool-calling loop for their model score.
+  const pipelines: PipelineHttpDeps = {
+    logger,
+    chain,
+    documentParser,
+    jobStore: createInMemoryPipelineJobStore(),
+    config: {
+      threshold: config.PASS_THRESHOLD_BPS,
+      maxDocuments: config.MAX_DOCUMENTS,
+      model: config.ANTHROPIC_MODEL,
+    },
+    orchestrator: {
+      anthropic,
+      model: config.ANTHROPIC_MODEL,
+      maxTokens: config.ANTHROPIC_MAX_TOKENS,
+      maxIterations: config.MAX_TOOL_ITERATIONS,
+      timeoutMs: config.VERIFY_TIMEOUT_MS,
+    },
+  };
+
+  const app = await buildServer({
+    config,
+    logger,
+    verifier,
+    jobStore,
+    chain,
+    pipelines,
+  });
 
   const shutdown = async (signal: string): Promise<void> => {
     logger.info({ signal }, 'shutting down');
