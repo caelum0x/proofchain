@@ -10,8 +10,6 @@ set -euo pipefail
 
 RPC=http://localhost:8545
 CONTRACTS_DIR="$(cd "$(dirname "$0")/../packages/contracts" && pwd)"
-AGENT_KEY=0x6dbbe3721df944d2ac2ddb23c97bfc232b1b5aa7be7cb2fd7ef7b71ecc0ade36
-AGENT=$(cast wallet address "$AGENT_KEY")
 
 cd "$CONTRACTS_DIR"
 echo "==> starting anvil"
@@ -19,9 +17,12 @@ pkill -f "anvil" 2>/dev/null || true; sleep 1
 anvil > /tmp/proofchain-anvil.log 2>&1 &
 sleep 3
 
-DK=$(grep -A20 "Private Keys" /tmp/proofchain-anvil.log | grep -oE "0x[a-f0-9]{64}" | sed -n '1p')
-BK=$(grep -A20 "Private Keys" /tmp/proofchain-anvil.log | grep -oE "0x[a-f0-9]{64}" | sed -n '2p')
-SK=$(grep -A20 "Private Keys" /tmp/proofchain-anvil.log | grep -oE "0x[a-f0-9]{64}" | sed -n '3p')
+# All signers are anvil's own funded dev accounts (never hardcoded / never real-network keys).
+DK=$(grep -A20 "Private Keys" /tmp/proofchain-anvil.log | grep -oE "0x[a-f0-9]{64}" | sed -n '1p')  # deployer / admin
+BK=$(grep -A20 "Private Keys" /tmp/proofchain-anvil.log | grep -oE "0x[a-f0-9]{64}" | sed -n '2p')  # buyer
+SK=$(grep -A20 "Private Keys" /tmp/proofchain-anvil.log | grep -oE "0x[a-f0-9]{64}" | sed -n '3p')  # supplier
+AGENT_KEY=$(grep -A20 "Private Keys" /tmp/proofchain-anvil.log | grep -oE "0x[a-f0-9]{64}" | sed -n '5p')  # verification agent
+AGENT=$(cast wallet address "$AGENT_KEY")
 SUPPLIER=$(cast wallet address "$SK"); BUYER=$(cast wallet address "$BK")
 
 echo "==> deploying contracts"
