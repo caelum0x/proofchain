@@ -1,121 +1,177 @@
 "use client";
 
-import { useMemo } from "react";
-import Link from "next/link";
-import type { Abi } from "viem";
-import { useAccount, useReadContract } from "wagmi";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ClaimState } from "@proofchain/shared";
+import { PageHeader } from "@/components/page";
+import {
+  AddressBadge,
+  Badge,
+  Button,
+  DataTable,
+  Dialog,
+  KpiRow,
+  Pagination,
+  type Column,
+} from "@/components/ui";
 import { useClaims } from "@/hooks/useClaims";
 import { useUsdc } from "@/hooks/useUsdc";
+import { useT3ListParams } from "@/hooks/useT3ListParams";
+import { SearchParamsBoundary } from "@/components/t3/SearchParamsBoundary";
+import { ListToolbar } from "@/components/t3/ListToolbar";
+import { NotAvailable } from "@/components/t3/NotAvailable";
 import { FileClaimForm } from "@/components/insurance/FileClaimForm";
-import { ClaimCard } from "@/components/insurance/ClaimCard";
-import { RequireWallet } from "@/components/RequireWallet";
-import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
-import { Badge } from "@/components/ui/Badge";
-import { getAbi } from "@/lib/abis";
+import {
+  CLAIM_STATUS_OPTIONS,
+  claimLabel,
+  claimSortKey,
+  claimTone,
+  matchesClaim,
+} from "@/components/t3/insurance-view";
+import { PAGE_SIZE, downloadCsv, paginate, sortRows, toCsv } from "@/components/t3/list-utils";
+import { formatTokenAmount, shortenHex } from "@/lib/format";
 import { getResolvedAddress } from "@/lib/shared";
 import { getErrorMessage } from "@/lib/errors";
-import { payableClaims, pendingClaims } from "@/lib/insurance";
+import type { ClaimRecord } from "@/lib/insurance";
 
-const CLAIMS_ABI = getAbi("ClaimsProcessor") as Abi;
-
-/**
- * Claims workspace: file a claim, track your claims, and — for arbiters —
- * review the queue of filed claims and pay out approved ones.
- */
-export default function ClaimsPage() {
-  const { address: account } = useAccount();
-  const usdc = useUsdc();
-  const claimsAddr = getResolvedAddress("ClaimsProcessor");
-  const deployed = Boolean(claimsAddr);
+function ClaimsContent() {
+  const router = useRouter();
+  const params = useT3ListParams({ defaultSort: "amount", defaultDir: "desc" });
   const { claims, isLoading, isError, error, refetch } = useClaims();
+  const usdc = useUsdc();
+  const [fileOpen, setFileOpen] = useState(false);
 
-  const roleQ = useReadContract({
-    address: claimsAddr,
-    abi: CLAIMS_ABI,
-    functionName: "ARBITER_ROLE",
-    query: { enabled: deployed },
-  });
-  const hasRoleQ = useReadContract({
-    address: claimsAddr,
-    abi: CLAIMS_ABI,
-    functionName: "hasRole",
-    args: roleQ.data && account ? [roleQ.data, account] : undefined,
-    query: { enabled: Boolean(claimsAddr && roleQ.data && account) },
-  });
-  const isArbiter = hasRoleQ.data === true;
+  const deployed = Boolean(getResolvedAddress("ClaimsProcessor"));
 
-  const mine = useMemo(
-    () => (account ? claims.filter((c) => c.claimant?.toLowerCase() === account.toLowerCase()) : []),
-    [claims, account],
+  const filtered = useMemo(
+    () => claims.filter((c) => matchesClaim(c, params.state.q, params.state.status)),
+    [claims, params.state.q, params.state.status],
   );
-  const pending = useMemo(() => pendingClaims(claims), [claims]);
-  const payable = useMemo(() => payableClaims(claims), [claims]);
+  const sorted = useMemo(
+    () => sortRows(filtered, claimSortKey, params.state.sort, params.state.dir),
+    [filtered, params.state.sort, params.state.dir],
+  );
+  const pageRows = useMemo(() => paginate(sorted, params.state.page), [sorted, params.state.page]);
 
-  const cardProps = { decimals: usdc.decimals, symbol: usdc.symbol, isArbiter, onChanged: () => void refetch() };
+  const filed = claims.filter((c) => c.state === ClaimState.Filed).length;
+  const approved = claims.filter((c) => c.state === ClaimState.Approved).length;
+  const paid = claims.filter((c) => c.state === ClaimState.Paid).length;
+  const totalClaimed = claims.reduce((acc, c) => acc + (c.amount ?? 0n), 0n);
+
+  const columns: Column<ClaimRecord>[] = [
+    { id: "claimId", header: "Claim", sortable: true, cell: (c) => <span className="font-mono text-sm">{shortenHex(c.claimId, 6, 6)}</span> },
+    {
+      id: "policyId",
+      header: "Policy",
+      className: "hidden sm:table-cell",
+      cell: (c) => (c.policyId ? <span className="font-mono text-xs text-muted">{shortenHex(c.policyId)}</span> : "—"),
+    },
+    { id: "claimant", header: "Claimant", cell: (c) => (c.claimant ? <AddressBadge address={c.claimant} explorer={false} /> : "—") },
+    {
+      id: "amount",
+      header: "Amount",
+      align: "right",
+      sortable: true,
+      cell: (c) => (
+        <span className="font-mono tabular-nums">
+          {formatTokenAmount(c.amount ?? 0n, usdc.decimals)} {usdc.symbol}
+        </span>
+      ),
+    },
+    { id: "state", header: "Status", sortable: true, cell: (c) => <Badge tone={claimTone(c.state)}>{claimLabel(c.state)}</Badge> },
+  ];
+
+  const onExport = () => {
+    const csv = toCsv(
+      ["claimId", "policyId", "claimant", "amount", "status"],
+      sorted.map((c) => [
+        c.claimId,
+        c.policyId ?? "",
+        c.claimant ?? "",
+        formatTokenAmount(c.amount ?? 0n, usdc.decimals),
+        claimLabel(c.state),
+      ]),
+    );
+    downloadCsv("claims.csv", csv);
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Insurance claims</h1>
-          <p className="mt-1 text-sm text-muted">File claims and, as an arbiter, review and settle them.</p>
-        </div>
-        <Link href="/insurance" className="text-sm text-brand hover:underline">
-          ← Insurance
-        </Link>
-      </div>
+      <PageHeader
+        icon="claims"
+        accentClassName="text-compliance"
+        title="Claims"
+        subtitle="File claims and track them through arbiter review and settlement."
+        breadcrumbs={[{ label: "Insurance", href: "/insurance" }, { label: "Claims" }]}
+        actions={
+          <Button onClick={() => setFileOpen(true)} disabled={!deployed}>
+            File claim
+          </Button>
+        }
+      />
 
       {!deployed ? (
-        <EmptyState
-          title="Claims are not available on this network"
-          description="The ClaimsProcessor contract is not deployed for the configured chain."
-        />
+        <NotAvailable resource="Claims" />
       ) : (
         <>
-          <RequireWallet>
-            <FileClaimForm decimals={usdc.decimals} symbol={usdc.symbol} onFiled={() => void refetch()} />
-          </RequireWallet>
+          <KpiRow
+            items={[
+              { label: "Total claims", value: claims.length.toLocaleString(), loading: isLoading },
+              { label: "Filed", value: filed.toLocaleString(), hint: "awaiting review", hintTone: "warn", loading: isLoading },
+              { label: "Approved", value: approved.toLocaleString(), hint: "payable", hintTone: "brand", loading: isLoading },
+              {
+                label: "Total claimed",
+                value: `${formatTokenAmount(totalClaimed, usdc.decimals)} ${usdc.symbol}`,
+                hint: `${paid} paid`,
+                loading: isLoading,
+              },
+            ]}
+          />
 
-          {isArbiter ? (
-            <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold">Arbiter queue</h2>
-                <Badge tone="brand">Arbiter</Badge>
-              </div>
-              {isLoading ? (
-                <LoadingState label="Indexing claims…" />
-              ) : pending.length === 0 && payable.length === 0 ? (
-                <EmptyState title="Nothing to review" description="No filed or approved claims awaiting action." />
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {[...pending, ...payable].map((claim) => (
-                    <ClaimCard key={claim.claimId} claim={claim} {...cardProps} />
-                  ))}
-                </div>
-              )}
-            </section>
-          ) : null}
+          <ListToolbar
+            params={params}
+            statusOptions={CLAIM_STATUS_OPTIONS}
+            searchPlaceholder="Search claim, policy, claimant…"
+            onExport={sorted.length > 0 ? onExport : undefined}
+          />
 
-          <section className="space-y-3">
-            <h2 className="text-base font-semibold">Your claims</h2>
-            {!account ? (
-              <EmptyState title="Connect your wallet" description="Connect to see claims you have filed." />
-            ) : isLoading ? (
-              <LoadingState label="Indexing your claims…" />
-            ) : isError ? (
-              <ErrorState message={getErrorMessage(error)} onRetry={() => void refetch()} />
-            ) : mine.length === 0 ? (
-              <EmptyState title="No claims filed" description="File a claim against one of your policies above." />
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {mine.map((claim) => (
-                  <ClaimCard key={claim.claimId} claim={claim} {...cardProps} />
-                ))}
-              </div>
-            )}
-          </section>
+          <DataTable
+            columns={columns}
+            rows={pageRows}
+            getRowKey={(c) => c.claimId}
+            onRowClick={(c) => router.push(`/insurance/claims/${c.claimId}`)}
+            isLoading={isLoading}
+            error={isError ? getErrorMessage(error) : null}
+            onRetry={() => void refetch()}
+            sort={params.state.sort ? { id: params.state.sort, dir: params.state.dir } : null}
+            onSortChange={params.setSort}
+            emptyTitle="No claims match"
+            emptyDescription="Adjust filters or file a claim against one of your policies."
+          />
+
+          <Pagination page={params.state.page} limit={PAGE_SIZE} total={sorted.length} onPageChange={params.setPage} />
         </>
       )}
+
+      <Dialog open={fileOpen} onClose={() => setFileOpen(false)} title="File a claim">
+        <FileClaimForm
+          decimals={usdc.decimals}
+          symbol={usdc.symbol}
+          onFiled={() => {
+            setFileOpen(false);
+            void refetch();
+          }}
+        />
+      </Dialog>
     </div>
+  );
+}
+
+/** Insurance › Claims list (WD §3): KPI row, URL-driven filters, table, paging. */
+export default function ClaimsPage() {
+  return (
+    <SearchParamsBoundary>
+      <ClaimsContent />
+    </SearchParamsBoundary>
   );
 }

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { Providers } from "./providers";
-import { Header } from "@/components/Header";
 import { ConfigBanner } from "@/components/ConfigBanner";
-import { NetworkBanner } from "@/components/NetworkBanner";
+import { AppFrame } from "@/components/shells";
+import { themeInitScript } from "@/components/ui/theme";
 
 export const metadata: Metadata = {
   title: "ProofChain — AI-verified provenance",
@@ -15,16 +15,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Applies the persisted theme before first paint (no FOUC). */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="font-sans">
         <Providers>
           <ConfigBanner />
-          <NetworkBanner />
-          <Header />
-          <main className="mx-auto w-full max-w-6xl px-4 py-8">{children}</main>
-          <footer className="mx-auto max-w-6xl px-4 py-8 text-xs text-muted">
-            ProofChain · Base Sepolia · Never share private keys. This dApp signs only in your
-            wallet.
-          </footer>
+          <AppFrame>{children}</AppFrame>
         </Providers>
       </body>
     </html>

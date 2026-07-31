@@ -4,15 +4,15 @@ import { useMemo } from "react";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { getErrorMessage } from "@/lib/errors";
 import { formatBps } from "@/lib/format";
+import { PageHeader, KpiRow } from "@/components/page";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { StatCard } from "@/components/ui/StatCard";
-import { EmptyState } from "@/components/ui/States";
+import { Callout } from "@/components/ui/Callout";
 import { LeaderboardTable } from "@/components/leaderboard/LeaderboardTable";
 
 /**
- * Supplier leaderboard ranked by on-chain track record (pass rate, average AI
- * score, deal volume, disputes). Reads the supplier registry joined with the
- * reputation engine + score oracle.
+ * Supplier leaderboard (WD §3): ranked by on-chain track record (pass rate,
+ * average AI score, deal volume, disputes) — the supplier registry joined with
+ * the reputation engine + score oracle.
  */
 export default function LeaderboardPage() {
   const { entries, isLoading, isError, error, notDeployed, refetch } = useLeaderboard();
@@ -29,33 +29,37 @@ export default function LeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Leaderboard</h1>
-        <p className="mt-1 text-sm text-muted">
-          Top suppliers by verified track record across the network.
-        </p>
-      </div>
+      <PageHeader
+        icon="leaderboard"
+        title="Leaderboard"
+        subtitle="Top suppliers by verified track record across the network."
+        breadcrumbs={[{ label: "Identity" }, { label: "Leaderboard" }]}
+      />
 
       {notDeployed ? (
-        <EmptyState
-          title="Registry not deployed"
-          description="The SupplierRegistry contract is not deployed on the configured network."
-        />
+        <Callout tone="warn" title="Registry not deployed">
+          The SupplierRegistry contract is not deployed on the configured network.
+        </Callout>
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <StatCard label="Suppliers" value={summary.supplierCount} loading={isLoading} />
-            <StatCard label="Settled deals" value={summary.totalDeals} loading={isLoading} />
-            <StatCard
-              label="Avg. pass rate"
-              value={formatBps(summary.avgPass)}
-              hint={summary.rankedCount > 0 ? `${summary.rankedCount} ranked` : "No settled deals"}
-              loading={isLoading}
-            />
-          </div>
+          <KpiRow
+            items={[
+              { label: "Suppliers", value: summary.supplierCount, loading: isLoading },
+              { label: "Settled deals", value: summary.totalDeals, loading: isLoading },
+              {
+                label: "Avg. pass rate",
+                value: formatBps(summary.avgPass),
+                hint: summary.rankedCount > 0 ? `${summary.rankedCount} ranked` : "No settled deals",
+                loading: isLoading,
+              },
+            ]}
+          />
 
           <Card>
-            <CardHeader title="Ranking" description="Ordered by pass rate, then score, then volume." />
+            <CardHeader
+              title="Ranking"
+              description="Ordered by pass rate, then score, then volume."
+            />
             <LeaderboardTable
               entries={entries}
               isLoading={isLoading}

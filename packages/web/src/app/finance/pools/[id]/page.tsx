@@ -8,6 +8,7 @@ import { PoolStats } from "@/components/finance/PoolStats";
 import { PoolActions } from "@/components/finance/PoolActions";
 import { LenderPosition } from "@/components/finance/LenderPosition";
 import { RequireWallet } from "@/components/RequireWallet";
+import { PageHeader } from "@/components/page";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { AddressBadge } from "@/components/ui/AddressBadge";
 import { EmptyState } from "@/components/ui/States";
@@ -23,10 +24,16 @@ export default function PoolDetailPage({ params }: { params: Promise<{ id: strin
   const poolId = valid ? (getAddress(id) as Address) : undefined;
   const pool = usePool(poolId);
 
+  const breadcrumbs = [
+    { label: "Trade Finance" },
+    { label: "Pools", href: "/finance/pools" },
+    { label: "Pool" },
+  ];
+
   if (!valid) {
     return (
       <div className="space-y-6">
-        <BackLink />
+        <PageHeader title="Financing pool" breadcrumbs={breadcrumbs} icon="finance" accentClassName="text-finance" />
         <EmptyState title="Invalid pool id" description="The pool id must be a valid contract address." />
       </div>
     );
@@ -34,13 +41,13 @@ export default function PoolDetailPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="space-y-6">
-      <BackLink />
-      <div>
-        <h1 className="text-2xl font-semibold">Financing pool</h1>
-        <p className="mt-1 flex items-center gap-2 text-sm text-muted">
-          <AddressBadge address={poolId as Address} />
-        </p>
-      </div>
+      <PageHeader
+        icon="finance"
+        accentClassName="text-finance"
+        title="Financing pool"
+        subtitle={<AddressBadge address={poolId as Address} />}
+        breadcrumbs={breadcrumbs}
+      />
 
       {!pool.poolAddress ? (
         <EmptyState title="Pool not found" description="No FinancingPool is deployed at this address on the configured chain." />
@@ -68,13 +75,5 @@ export default function PoolDetailPage({ params }: { params: Promise<{ id: strin
         </>
       )}
     </div>
-  );
-}
-
-function BackLink() {
-  return (
-    <Link href="/finance/pools" className="text-sm text-brand hover:underline">
-      ← All pools
-    </Link>
   );
 }

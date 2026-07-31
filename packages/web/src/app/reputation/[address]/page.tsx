@@ -6,17 +6,20 @@ import { useReputation } from "@/hooks/useReputation";
 import { useActorProfile } from "@/hooks/useActorProfile";
 import { normalizeAddress } from "@/lib/directory";
 import { getErrorMessage } from "@/lib/errors";
+import { formatBps } from "@/lib/format";
+import { DetailShell } from "@/components/shells/DetailShell";
+import { PageHeader } from "@/components/page";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { AddressBadge } from "@/components/ui/AddressBadge";
 import { Button } from "@/components/ui/Button";
+import { StatCard } from "@/components/ui/StatCard";
 import { ErrorState, EmptyState } from "@/components/ui/States";
 import { ReputationStats } from "@/components/reputation/ReputationStats";
 import { GradeBadge } from "@/components/reputation/GradeBadge";
 
 /**
- * Reputation detail for a single address: the composite risk grade
- * (ScoreOracle) and the underlying reputation stats (ReputationEngine). Links
- * back to the supplier profile when the address is a registered supplier.
+ * Reputation detail (WD §2 DetailShell): the composite risk grade (ScoreOracle)
+ * and underlying reputation stats (ReputationEngine) for a single address.
  */
 export default function ReputationPage() {
   const params = useParams<{ address: string }>();
@@ -36,28 +39,45 @@ export default function ReputationPage() {
   }
 
   const name = supplier.profile?.name;
+  const rep = reputation.reputation;
+  const header = (
+    <PageHeader
+      icon="reputation"
+      title={name || "Reputation"}
+      breadcrumbs={[{ label: "Identity" }, { label: "Reputation" }, { label: name || "Detail" }]}
+      actions={
+        supplier.profile ? (
+          <Link href={`/suppliers/${account}`}>
+            <Button variant="secondary" size="sm">
+              Supplier profile
+            </Button>
+          </Link>
+        ) : null
+      }
+    />
+  );
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-semibold">{name || "Reputation"}</h1>
+    <DetailShell
+      header={header}
+      rail={
+        <>
+          <Card>
+            <CardHeader title="Identity" />
+            <div className="space-y-3 text-sm">
+              <AddressBadge address={account} />
               {reputation.gradeAvailable ? <GradeBadge grade={reputation.grade} /> : null}
             </div>
-            <AddressBadge address={account} />
-          </div>
-          {supplier.profile ? (
-            <Link href={`/suppliers/${account}`}>
-              <Button variant="secondary" size="sm">
-                Supplier profile
-              </Button>
-            </Link>
-          ) : null}
-        </div>
-      </Card>
-
+          </Card>
+          <StatCard
+            label="Pass rate"
+            value={formatBps(rep.passRateBps)}
+            loading={reputation.isLoading}
+          />
+          <StatCard label="Settled deals" value={rep.totalDeals} loading={reputation.isLoading} />
+        </>
+      }
+    >
       <Card>
         <CardHeader
           title="Reputation stats"
@@ -72,7 +92,7 @@ export default function ReputationPage() {
           <ErrorState message={getErrorMessage(reputation.error)} onRetry={reputation.refetch} />
         ) : (
           <div className="space-y-4">
-            <ReputationStats reputation={reputation.reputation} loading={reputation.isLoading} />
+            <ReputationStats reputation={rep} loading={reputation.isLoading} />
             {!reputation.isLoading && !reputation.hasReputation ? (
               <p className="text-sm text-muted">
                 No settled deals recorded for this address yet — reputation accrues as its deals
@@ -82,6 +102,6 @@ export default function ReputationPage() {
           </div>
         )}
       </Card>
-    </div>
+    </DetailShell>
   );
 }

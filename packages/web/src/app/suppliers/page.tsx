@@ -1,26 +1,39 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRegistryDirectory } from "@/hooks/useRegistryDirectory";
-import { ProfileGrid } from "@/components/directory/ProfileGrid";
+import { PageHeader, KpiRow } from "@/components/page";
+import { ActorDirectory } from "@/components/t6/ActorDirectory";
 
 /**
- * Supplier directory: every account registered in `SupplierRegistry`, with a
- * link into each supplier's profile + on-chain track record.
+ * Supplier directory (WD §3): every account registered in `SupplierRegistry`,
+ * with a link into each supplier's profile + on-chain track record.
  */
 export default function SuppliersPage() {
-  const { profiles, isLoading, isError, error, notDeployed, refetch } =
-    useRegistryDirectory("SupplierRegistry", "SupplierRegistered");
+  const { profiles, isLoading, isError, error, notDeployed, refetch } = useRegistryDirectory(
+    "SupplierRegistry",
+    "SupplierRegistered",
+  );
+
+  const named = useMemo(() => profiles.filter((p) => p.name.trim().length > 0).length, [profiles]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Suppliers</h1>
-        <p className="mt-1 text-sm text-muted">
-          Registered suppliers across the ProofChain network and their track record.
-        </p>
-      </div>
+      <PageHeader
+        icon="suppliers"
+        title="Suppliers"
+        subtitle="Registered suppliers across the ProofChain network and their track record."
+        breadcrumbs={[{ label: "Identity" }, { label: "Suppliers" }]}
+      />
 
-      <ProfileGrid
+      <KpiRow
+        items={[
+          { label: "Suppliers", value: profiles.length, loading: isLoading },
+          { label: "With profile name", value: named, loading: isLoading },
+        ]}
+      />
+
+      <ActorDirectory
         profiles={profiles}
         isLoading={isLoading}
         isError={isError}

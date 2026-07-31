@@ -6,20 +6,21 @@ import { useActorProfile } from "@/hooks/useActorProfile";
 import { useBuyerDeals } from "@/hooks/useBuyerDeals";
 import { normalizeAddress } from "@/lib/directory";
 import { getErrorMessage } from "@/lib/errors";
-import { formatTokenAmount } from "@/lib/format";
+import { formatTokenAmount, formatTimestamp } from "@/lib/format";
 import { DealState } from "@/lib/types";
+import { DetailShell } from "@/components/shells/DetailShell";
+import { PageHeader } from "@/components/page";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { AddressBadge } from "@/components/ui/AddressBadge";
 import { StatCard } from "@/components/ui/StatCard";
-import { ErrorState, LoadingState } from "@/components/ui/States";
-import { ProfileHeader } from "@/components/directory/ProfileHeader";
+import { ErrorState } from "@/components/ui/States";
 import { DealList } from "@/components/directory/DealList";
 
 const USDC_DECIMALS = 6;
 
 /**
- * Buyer profile: identity (BuyerRegistry) plus every escrow deal they funded,
- * with headline totals (deal count, total + settled value).
+ * Buyer profile (WD §2 DetailShell): identity (BuyerRegistry) plus every escrow
+ * deal they funded, with headline totals in the rail.
  */
 export default function BuyerProfilePage() {
   const params = useParams<{ address: string }>();
@@ -48,43 +49,47 @@ export default function BuyerProfilePage() {
     );
   }
 
+  const name = profileResult.profile?.name;
+  const header = (
+    <PageHeader
+      icon="buyers"
+      title={name || "Buyer"}
+      breadcrumbs={[{ label: "Identity" }, { label: "Buyers" }, { label: name || "Profile" }]}
+    />
+  );
+
   return (
-    <div className="space-y-6">
-      {profileResult.isLoading ? (
-        <LoadingState label="Loading buyer profile…" />
-      ) : profileResult.isError ? (
-        <ErrorState
-          message={getErrorMessage(profileResult.error)}
-          onRetry={profileResult.refetch}
-        />
-      ) : profileResult.profile ? (
-        <ProfileHeader profile={profileResult.profile} roleLabel="Buyer" />
-      ) : (
-        <Card>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold">Unregistered buyer</h1>
-            <div className="flex items-center gap-2 text-sm text-muted">
-              <span>No BuyerRegistry profile for</span>
+    <DetailShell
+      header={header}
+      rail={
+        <>
+          <Card>
+            <CardHeader title="Identity" />
+            <div className="space-y-2 text-sm">
               <AddressBadge address={account} />
+              {profileResult.profile ? (
+                <p className="text-xs text-muted">
+                  Registered {formatTimestamp(profileResult.profile.registeredAt)}
+                </p>
+              ) : (
+                <p className="text-xs text-warn">No BuyerRegistry profile for this address.</p>
+              )}
             </div>
-          </div>
-        </Card>
-      )}
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        <StatCard label="Deals funded" value={totals.count} loading={dealsResult.isLoading} />
-        <StatCard
-          label="Total funded"
-          value={`${formatTokenAmount(totals.funded, USDC_DECIMALS)} USDC`}
-          loading={dealsResult.isLoading}
-        />
-        <StatCard
-          label="Settled value"
-          value={`${formatTokenAmount(totals.released, USDC_DECIMALS)} USDC`}
-          loading={dealsResult.isLoading}
-        />
-      </div>
-
+          </Card>
+          <StatCard label="Deals funded" value={totals.count} loading={dealsResult.isLoading} />
+          <StatCard
+            label="Total funded"
+            value={`${formatTokenAmount(totals.funded, USDC_DECIMALS)} USDC`}
+            loading={dealsResult.isLoading}
+          />
+          <StatCard
+            label="Settled value"
+            value={`${formatTokenAmount(totals.released, USDC_DECIMALS)} USDC`}
+            loading={dealsResult.isLoading}
+          />
+        </>
+      }
+    >
       <Card>
         <CardHeader title="Funded deals" description="Escrow deals this buyer created." />
         <DealList
@@ -97,6 +102,6 @@ export default function BuyerProfilePage() {
           onRetry={dealsResult.refetch}
         />
       </Card>
-    </div>
+    </DetailShell>
   );
 }

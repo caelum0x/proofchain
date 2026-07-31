@@ -7,177 +7,174 @@ import { isBytes32 } from "@/lib/hashing";
 import { useBatchDetail } from "@/hooks/useBatchDetail";
 import { useTimeline } from "@/hooks/useTimeline";
 import { useVerdict } from "@/hooks/useVerdict";
-import {
-  dealStateLabel,
-  dealStateTone,
-  explorerAddressUrl,
-  formatBps,
-  formatTokenAmount,
-  shortenHex,
-} from "@/lib/format";
+import { useUsdc } from "@/hooks/useUsdc";
+import { dealStateLabel, dealStateTone, formatBps, type ToneName } from "@/lib/format";
 import { getErrorMessage } from "@/lib/errors";
+import { DetailShell } from "@/components/shells/DetailShell";
+import { PageHeader } from "@/components/page/PageHeader";
+import { AsyncBoundary } from "@/components/page/AsyncBoundary";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { AddressLink } from "@/components/ui/TxLink";
-import { ErrorState, LoadingState } from "@/components/ui/States";
+import { StatusBadge, type SemanticStatus } from "@/components/ui/StatusBadge";
+import { AddressBadge } from "@/components/ui/AddressBadge";
+import { EmptyState } from "@/components/ui/States";
 import { ProvenanceTrail } from "@/components/ProvenanceTrail";
-import { Timeline } from "@/components/Timeline";
 import { FindingsList } from "@/components/FindingsList";
 import { DealActions } from "@/components/DealActions";
+import { DealTimeline } from "@/components/t2/DealTimeline";
+import { Money } from "@/components/t2/Money";
+import { Bytes32Cell } from "@/components/t2/Bytes32Cell";
 
-const USDC_DECIMALS = 6;
+function toStatus(tone: ToneName): SemanticStatus {
+  return tone === "brand" ? "brand" : tone;
+}
 
 export default function DealDetailPage() {
   const params = useParams<{ batchId: string }>();
   const raw = Array.isArray(params.batchId) ? params.batchId[0] : params.batchId;
   const batchId = raw && isBytes32(raw) ? (raw as Hex) : undefined;
 
+  if (!batchId) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Deal" breadcrumbs={[{ label: "Settlement" }, { label: "Deals", href: "/deals" }, { label: "Invalid" }]} />
+        <EmptyState title="Invalid batch id" description="The URL does not contain a valid 32-byte batch id." />
+      </div>
+    );
+  }
+
+  return <DealDetail batchId={batchId} />;
+}
+
+function DealDetail({ batchId }: { batchId: Hex }) {
   const detail = useBatchDetail(batchId);
   const timeline = useTimeline(batchId);
   const verdict = useVerdict(detail.attestation?.verdictURI, true);
-
-  if (!batchId) {
-    return (
-      <ErrorState
-        title="Invalid batch id"
-        message="The URL does not contain a valid 32-byte batch id."
-      />
-    );
-  }
+  const usdc = useUsdc();
 
   const attested = Boolean(detail.attestation);
   const score = detail.attestation?.score;
   const threshold = detail.passThreshold ?? 7000;
   const passed = score !== undefined && score >= threshold;
+  const deal = detail.deal;
+
+  const header = (
+    <PageHeader
+      icon="deals"
+      accentClassName="text-finance"
+      title="Deal detail"
+      subtitle={<Bytes32Cell value={batchId} lead={10} tail={8} />}
+      breadcrumbs={[{ label: "Settlement" }, { label: "Deals", href: "/deals" }, { label: "Detail" }]}
+      actions={deal ? <StatusBadge status={toStatus(dealStateTone(deal.state))}>{dealStateLabel(deal.state)}</StatusBadge> : null}
+    />
+  );
+
+  const rail = (
+    <>
+      <Card>
+        <CardHeader title="Parties" />
+        {deal && deal.state !== 0 ? (
+          <dl className="space-y-3 text-sm">
+            <Rail label="Buyer">
+              <AddressBadge address={deal.buyer} />
+            </Rail>
+            <Rail label="Supplier">
+              <AddressBadge address={deal.supplier} />
+            </Rail>
+            <Rail label="Amount">
+              <Money amount={deal.amount} decimals={usdc.decimals} symbol={usdc.symbol} strong />
+            </Rail>
+            <Rail label="Token">
+              <AddressBadge address={deal.token} />
+            </Rail>
+          </dl>
+        ) : (
+          <p className="text-sm text-muted">No deal funded for this batch yet.</p>
+        )}
+      </Card>
+
+      {deal && deal.state !== 0 ? (
+        <Card>
+          <CardHeader title="Actions" description="Settlement is permissionless once attested." />
+          <DealActions
+            batchId={batchId}
+            deal={deal}
+            isAttested={attested}
+            onDone={() => {
+              detail.refetch();
+              void timeline.refetch();
+            }}
+          />
+        </Card>
+      ) : null}
+
+      <Card>
+        <CardHeader title="Timeline" description="Registered → checkpoints → attested → settled" />
+        <AsyncBoundary
+          isLoading={timeline.isLoading}
+          error={timeline.isError ? getErrorMessage(timeline.error) : null}
+          onRetry={() => void timeline.refetch()}
+        >
+          <DealTimeline items={timeline.items} />
+        </AsyncBoundary>
+      </Card>
+    </>
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Deal detail</h1>
-          <a
-            href={explorerAddressUrl(batchId)}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="font-mono text-xs text-brand hover:underline"
-          >
-            {shortenHex(batchId, 10, 8)}
-          </a>
-        </div>
-        {detail.deal ? (
-          <Badge tone={dealStateTone(detail.deal.state)}>{dealStateLabel(detail.deal.state)}</Badge>
-        ) : null}
-      </div>
+    <DetailShell header={header} rail={rail}>
+      <AsyncBoundary
+        isLoading={detail.isLoading}
+        error={detail.isError ? getErrorMessage(detail.error) : null}
+        onRetry={() => detail.refetch()}
+      >
+        <Card>
+          <CardHeader title="Provenance" description="Origin and recorded checkpoints." />
+          <ProvenanceTrail batch={detail.batch} checkpoints={detail.checkpoints} />
+        </Card>
 
-      {detail.isLoading ? (
-        <LoadingState label="Loading on-chain state…" />
-      ) : detail.isError ? (
-        <ErrorState message={getErrorMessage(detail.error)} onRetry={() => detail.refetch()} />
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader title="Provenance" />
-              <ProvenanceTrail batch={detail.batch} checkpoints={detail.checkpoints} />
-            </Card>
-
-            <Card>
-              <CardHeader
-                title="Attestation"
-                action={
-                  attested ? (
-                    <Badge tone={passed ? "success" : "danger"}>
-                      {score !== undefined ? formatBps(score) : "—"} ·{" "}
-                      {passed ? "PASS" : "FAIL"}
-                    </Badge>
-                  ) : (
-                    <Badge tone="neutral">Not attested</Badge>
-                  )
-                }
-              />
-              {!attested ? (
-                <p className="text-sm text-muted">
-                  No attestation yet. Request verification from the Supplier screen.
-                </p>
+        <Card>
+          <CardHeader
+            title="Attestation"
+            action={
+              attested ? (
+                <StatusBadge status={passed ? "success" : "danger"}>
+                  {score !== undefined ? formatBps(score) : "—"} · {passed ? "PASS" : "FAIL"}
+                </StatusBadge>
               ) : (
-                <div className="space-y-3">
-                  <p className="text-xs text-muted">
-                    Threshold {formatBps(threshold)} · agent{" "}
-                    {detail.attestation ? (
-                      <AddressLink address={detail.attestation.agent} />
-                    ) : null}
-                  </p>
-                  {verdict.isLoading ? (
-                    <p className="text-sm text-muted">Loading findings…</p>
-                  ) : verdict.isError ? (
-                    <p className="text-sm text-danger">Could not load verdict document.</p>
-                  ) : verdict.verdict ? (
-                    <FindingsList findings={verdict.verdict.findings} />
-                  ) : (
-                    <p className="text-sm text-muted">No linked verdict document.</p>
-                  )}
-                </div>
-              )}
-            </Card>
-
-            <Card>
-              <CardHeader title="Settlement" />
-              {detail.deal && detail.deal.state !== 0 ? (
-                <div className="space-y-3">
-                  <dl className="grid grid-cols-2 gap-3 text-sm">
-                    <Info label="Buyer">
-                      <AddressLink address={detail.deal.buyer} />
-                    </Info>
-                    <Info label="Supplier">
-                      <AddressLink address={detail.deal.supplier} />
-                    </Info>
-                    <Info label="Amount">
-                      {formatTokenAmount(detail.deal.amount, USDC_DECIMALS)}
-                    </Info>
-                    <Info label="Token">
-                      <AddressLink address={detail.deal.token} />
-                    </Info>
-                  </dl>
-                  <DealActions
-                    batchId={batchId}
-                    deal={detail.deal}
-                    isAttested={attested}
-                    onDone={() => {
-                      detail.refetch();
-                      void timeline.refetch();
-                    }}
-                  />
-                </div>
+                <StatusBadge status="neutral">Not attested</StatusBadge>
+              )
+            }
+          />
+          {!attested ? (
+            <p className="text-sm text-muted">No attestation yet. Request verification from the Supplier screen.</p>
+          ) : (
+            <div className="space-y-3">
+              <p className="flex flex-wrap items-center gap-1 text-xs text-muted">
+                Threshold {formatBps(threshold)} · agent{" "}
+                {detail.attestation ? <AddressBadge address={detail.attestation.agent} explorer={false} /> : null}
+              </p>
+              {verdict.isLoading ? (
+                <p className="text-sm text-muted">Loading findings…</p>
+              ) : verdict.isError ? (
+                <p className="text-sm text-danger">Could not load verdict document.</p>
+              ) : verdict.verdict ? (
+                <FindingsList findings={verdict.verdict.findings} />
               ) : (
-                <p className="text-sm text-muted">No deal funded for this batch yet.</p>
+                <p className="text-sm text-muted">No linked verdict document.</p>
               )}
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader title="Timeline" description="Registered → checkpoints → attested → settled" />
-            {timeline.isLoading ? (
-              <LoadingState label="Loading events…" />
-            ) : timeline.isError ? (
-              <ErrorState
-                message={getErrorMessage(timeline.error)}
-                onRetry={() => void timeline.refetch()}
-              />
-            ) : (
-              <Timeline items={timeline.items} />
-            )}
-          </Card>
-        </div>
-      )}
-    </div>
+            </div>
+          )}
+        </Card>
+      </AsyncBoundary>
+    </DetailShell>
   );
 }
 
-function Info({ label, children }: { label: string; children: ReactNode }) {
+function Rail({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div>
+    <div className="flex items-center justify-between gap-3">
       <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
-      <dd className="mt-0.5 text-fg">{children}</dd>
+      <dd className="min-w-0 text-right text-fg">{children}</dd>
     </div>
   );
 }

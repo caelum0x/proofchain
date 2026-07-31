@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePool } from "@/hooks/usePool";
 import { PoolStats } from "@/components/finance/PoolStats";
+import { PageHeader } from "@/components/page";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { AddressBadge } from "@/components/ui/AddressBadge";
-import { EmptyState } from "@/components/ui/States";
 import { formatTokenAmount } from "@/lib/format";
+import { NotDeployedState } from "@/components/t2/NotDeployedState";
 
 /**
  * Directory of financing pools. A single canonical FinancingPool is deployed on
@@ -19,18 +20,16 @@ export default function PoolsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Financing pools</h1>
-        <p className="mt-1 text-sm text-muted">
-          Pooled lender capital that auto-funds eligible receivables by risk grade.
-        </p>
-      </div>
+      <PageHeader
+        icon="finance"
+        accentClassName="text-finance"
+        title="Financing pools"
+        subtitle="Pooled lender capital that auto-funds eligible receivables by risk grade."
+        breadcrumbs={[{ label: "Trade Finance" }, { label: "Pools" }]}
+      />
 
       {!pool.poolAddress ? (
-        <EmptyState
-          title="No pools on this network"
-          description="The FinancingPool contract is not deployed for the configured chain."
-        />
+        <NotDeployedState contract="FinancingPool" />
       ) : (
         <>
           <PoolStats pool={pool} />

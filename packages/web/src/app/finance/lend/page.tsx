@@ -6,7 +6,8 @@ import { PoolStats } from "@/components/finance/PoolStats";
 import { PoolActions } from "@/components/finance/PoolActions";
 import { LenderPosition } from "@/components/finance/LenderPosition";
 import { RequireWallet } from "@/components/RequireWallet";
-import { EmptyState } from "@/components/ui/States";
+import { PageHeader } from "@/components/page";
+import { NotDeployedState } from "@/components/t2/NotDeployedState";
 
 /**
  * Lend page: deposit capital into the FinancingPool and earn yield as financed
@@ -17,18 +18,16 @@ export default function LendPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Lend</h1>
-        <p className="mt-1 text-sm text-muted">
-          Deposit stablecoins into the financing pool and earn yield from receivable advances.
-        </p>
-      </div>
+      <PageHeader
+        icon="finance"
+        accentClassName="text-finance"
+        title="Lend"
+        subtitle="Deposit stablecoins into the financing pool and earn yield from receivable advances."
+        breadcrumbs={[{ label: "Trade Finance" }, { label: "Lend" }]}
+      />
 
       {!pool.poolAddress ? (
-        <EmptyState
-          title="Lending is not available on this network"
-          description="The FinancingPool contract is not deployed for the configured chain."
-        />
+        <NotDeployedState contract="FinancingPool" />
       ) : (
         <>
           <PoolStats pool={pool} />

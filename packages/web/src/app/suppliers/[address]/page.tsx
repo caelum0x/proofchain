@@ -5,20 +5,24 @@ import { useParams } from "next/navigation";
 import { useActorProfile } from "@/hooks/useActorProfile";
 import { useReputation } from "@/hooks/useReputation";
 import { useSupplierBatches } from "@/hooks/useSupplierBatches";
+import { useBondAccount } from "@/hooks/useBond";
 import { normalizeAddress } from "@/lib/directory";
 import { getErrorMessage } from "@/lib/errors";
+import { formatTimestamp, formatTokenAmount } from "@/lib/format";
+import { DetailShell } from "@/components/shells/DetailShell";
+import { PageHeader } from "@/components/page";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { AddressBadge } from "@/components/ui/AddressBadge";
 import { Button } from "@/components/ui/Button";
+import { StatCard } from "@/components/ui/StatCard";
 import { ErrorState, LoadingState, EmptyState } from "@/components/ui/States";
-import { ProfileHeader } from "@/components/directory/ProfileHeader";
 import { BatchList } from "@/components/directory/BatchList";
 import { ReputationStats } from "@/components/reputation/ReputationStats";
 import { GradeBadge } from "@/components/reputation/GradeBadge";
 
 /**
- * Supplier profile: identity (SupplierRegistry), on-chain reputation +
- * risk grade (ReputationEngine / ScoreOracle), and every batch they registered.
+ * Supplier profile (WD §2 DetailShell): identity (SupplierRegistry), on-chain
+ * reputation + risk grade, posted bond, and every batch they registered.
  */
 export default function SupplierProfilePage() {
   const params = useParams<{ address: string }>();
@@ -28,6 +32,7 @@ export default function SupplierProfilePage() {
   const profileResult = useActorProfile("SupplierRegistry", account);
   const reputation = useReputation(account);
   const batches = useSupplierBatches(account);
+  const bond = useBondAccount(account ?? undefined);
 
   if (!account) {
     return (
@@ -38,37 +43,64 @@ export default function SupplierProfilePage() {
     );
   }
 
+  const name = profileResult.profile?.name;
+  const header = (
+    <PageHeader
+      icon="suppliers"
+      title={name || "Supplier"}
+      breadcrumbs={[
+        { label: "Identity" },
+        { label: "Suppliers", href: "/suppliers" },
+        { label: name || "Profile" },
+      ]}
+      actions={
+        <Link href={`/reputation/${account}`}>
+          <Button variant="secondary" size="sm">
+            Reputation detail
+          </Button>
+        </Link>
+      }
+    />
+  );
+
   return (
-    <div className="space-y-6">
+    <DetailShell
+      header={header}
+      rail={
+        <>
+          <Card>
+            <CardHeader title="Identity" />
+            <div className="space-y-3 text-sm">
+              <AddressBadge address={account} />
+              <div className="flex flex-wrap items-center gap-2">
+                {reputation.gradeAvailable ? <GradeBadge grade={reputation.grade} /> : null}
+              </div>
+              {profileResult.profile ? (
+                <p className="text-xs text-muted">
+                  Registered {formatTimestamp(profileResult.profile.registeredAt)}
+                </p>
+              ) : (
+                <p className="text-xs text-warn">No SupplierRegistry profile for this address.</p>
+              )}
+            </div>
+          </Card>
+          <StatCard
+            label="Posted bond"
+            value={bond.deployed ? formatTokenAmount(bond.total, 18) : "—"}
+            hint={bond.deployed ? `${formatTokenAmount(bond.locked, 18)} locked` : undefined}
+            loading={bond.isLoading}
+          />
+        </>
+      }
+    >
       {profileResult.isLoading ? (
         <LoadingState label="Loading supplier profile…" />
       ) : profileResult.isError ? (
-        <ErrorState
-          message={getErrorMessage(profileResult.error)}
-          onRetry={profileResult.refetch}
-        />
-      ) : !profileResult.profile ? (
-        <UnregisteredCard account={account} />
-      ) : (
-        <ProfileHeader
-          profile={profileResult.profile}
-          roleLabel="Supplier"
-          badges={reputation.gradeAvailable ? <GradeBadge grade={reputation.grade} /> : null}
-          actions={
-            <Link href={`/reputation/${account}`}>
-              <Button variant="secondary" size="sm">
-                Reputation detail
-              </Button>
-            </Link>
-          }
-        />
-      )}
+        <ErrorState message={getErrorMessage(profileResult.error)} onRetry={profileResult.refetch} />
+      ) : null}
 
       <Card>
-        <CardHeader
-          title="Reputation"
-          description="Aggregated outcomes recorded on settlement."
-        />
+        <CardHeader title="Reputation" description="Aggregated outcomes recorded on settlement." />
         {reputation.notDeployed ? (
           <EmptyState
             title="Reputation engine not deployed"
@@ -92,23 +124,6 @@ export default function SupplierProfilePage() {
           onRetry={batches.refetch}
         />
       </Card>
-    </div>
-  );
-}
-
-function UnregisteredCard({ account }: { account: string }) {
-  return (
-    <Card>
-      <div className="space-y-3">
-        <h1 className="text-2xl font-semibold">Unregistered supplier</h1>
-        <div className="flex items-center gap-2 text-sm text-muted">
-          <span>This address has no SupplierRegistry profile:</span>
-          <AddressBadge address={account} />
-        </div>
-        <p className="text-sm text-muted">
-          Their on-chain reputation and any registered batches are still shown below if present.
-        </p>
-      </div>
-    </Card>
+    </DetailShell>
   );
 }

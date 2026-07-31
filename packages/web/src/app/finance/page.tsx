@@ -1,110 +1,114 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { InvoiceListingState } from "@proofchain/shared";
 import { useFinancingListings } from "@/hooks/useFinancingListings";
 import { useUsdc } from "@/hooks/useUsdc";
+import { useTradeUrlState } from "@/hooks/tradeUrlState";
 import { ListingCard } from "@/components/finance/ListingCard";
 import { ListReceivableForm } from "@/components/finance/ListReceivableForm";
 import { RequireWallet } from "@/components/RequireWallet";
-import { StatCard } from "@/components/ui/StatCard";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
+import { PageHeader, Toolbar, FilterBar } from "@/components/page";
+import { KpiRow } from "@/components/ui/KpiRow";
+import { CardGrid } from "@/components/ui/CardGrid";
+import { Card, CardHeader } from "@/components/ui/Card";
+import { Select } from "@/components/ui/Select";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getResolvedAddress } from "@/lib/shared";
 import { formatTokenAmount } from "@/lib/format";
 import { getErrorMessage } from "@/lib/errors";
 import { isListingClosed, openListings } from "@/lib/finance";
+import { NotDeployedState } from "@/components/t2/NotDeployedState";
+import { SearchParamsBoundary } from "@/components/t2/SearchParamsBoundary";
 
-type Filter = "open" | "all";
+const FILTERS = [
+  { value: "open", label: "Open" },
+  { value: "all", label: "All" },
+];
 
 export default function FinanceMarketplacePage() {
+  return (
+    <SearchParamsBoundary>
+      <FinanceMarketplaceContent />
+    </SearchParamsBoundary>
+  );
+}
+
+function FinanceMarketplaceContent() {
+  const url = useTradeUrlState();
   const deployed = Boolean(getResolvedAddress("InvoiceFinancing"));
   const { listings, isLoading, isError, error, refetch } = useFinancingListings();
   const usdc = useUsdc();
-  const [filter, setFilter] = useState<Filter>("open");
 
+  const filter = url.get("show", "open");
   const open = useMemo(() => openListings(listings), [listings]);
   const shown = filter === "open" ? open : listings;
 
-  const totalOpenAsk = useMemo(
-    () => open.reduce((sum, r) => sum + (r.askAmount ?? 0n), 0n),
-    [open],
-  );
+  const totalOpenAsk = useMemo(() => open.reduce((sum, r) => sum + (r.askAmount ?? 0n), 0n), [open]);
   const funded = listings.filter((r) => r.state === InvoiceListingState.Funded).length;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Financing marketplace</h1>
-          <p className="mt-1 text-sm text-muted">
-            Suppliers list attested receivables; lenders advance capital and become the escrow payee.
-          </p>
-        </div>
-        <Badge tone="success">
-          <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
-          Live
-        </Badge>
-      </div>
+      <PageHeader
+        icon="marketplace"
+        accentClassName="text-finance"
+        title="Financing marketplace"
+        subtitle="Suppliers list attested receivables; lenders advance capital and become the escrow payee."
+        breadcrumbs={[{ label: "Trade Finance" }, { label: "Marketplace" }]}
+        actions={<StatusBadge status="success">Live</StatusBadge>}
+      />
 
       {!deployed ? (
-        <EmptyState
-          title="Financing is not available on this network"
-          description="The InvoiceFinancing contract is not deployed for the configured chain."
-        />
+        <NotDeployedState contract="InvoiceFinancing" />
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard label="Open listings" value={open.length} loading={isLoading} />
-            <StatCard label="In financing" value={funded} loading={isLoading} />
-            <StatCard
-              label="Open ask volume"
-              value={`${formatTokenAmount(totalOpenAsk, usdc.decimals)} ${usdc.symbol}`}
-              loading={isLoading}
-            />
-          </div>
+          <KpiRow
+            loading={isLoading}
+            items={[
+              { label: "Open listings", value: open.length },
+              { label: "In financing", value: funded, hintTone: "brand" },
+              { label: "Open ask volume", value: `${formatTokenAmount(totalOpenAsk, usdc.decimals)} ${usdc.symbol}` },
+              { label: "Total listings", value: listings.length },
+            ]}
+          />
 
           <RequireWallet>
             <ListReceivableForm decimals={usdc.decimals} symbol={usdc.symbol} onListed={() => void refetch()} />
           </RequireWallet>
 
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">Listings</h2>
-            <div className="flex gap-2">
-              <Button size="sm" variant={filter === "open" ? "primary" : "secondary"} onClick={() => setFilter("open")}>
-                Open ({open.length})
-              </Button>
-              <Button size="sm" variant={filter === "all" ? "primary" : "secondary"} onClick={() => setFilter("all")}>
-                All ({listings.length})
-              </Button>
-            </div>
-          </div>
-
-          {isLoading ? (
-            <LoadingState label="Indexing financing listings…" />
-          ) : isError ? (
-            <ErrorState message={getErrorMessage(error)} onRetry={() => void refetch()} />
-          ) : shown.length === 0 ? (
-            <EmptyState
-              title={filter === "open" ? "No open listings" : "No listings yet"}
-              description="List an attested receivable above to offer it for financing."
+          <Card>
+            <CardHeader
+              title="Listings"
+              action={
+                <Toolbar>
+                  <FilterBar>
+                    <Select
+                      aria-label="Filter listings"
+                      options={FILTERS}
+                      value={filter}
+                      onChange={(e) => url.set("show", e.target.value === "open" ? null : e.target.value)}
+                      className="w-32"
+                    />
+                  </FilterBar>
+                </Toolbar>
+              }
             />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {shown.map((record) => (
-                <ListingCard
-                  key={`${record.batchId}-${record.order}`}
-                  record={record}
-                  decimals={usdc.decimals}
-                  symbol={usdc.symbol}
-                  onChanged={() => void refetch()}
-                />
-              ))}
-            </div>
-          )}
+            <CardGrid
+              items={shown}
+              getKey={(r) => `${r.batchId}-${r.order}`}
+              minColWidth={300}
+              isLoading={isLoading}
+              error={isError ? getErrorMessage(error) : null}
+              onRetry={() => void refetch()}
+              emptyTitle={filter === "open" ? "No open listings" : "No listings yet"}
+              emptyDescription="List an attested receivable above to offer it for financing."
+              renderItem={(record) => (
+                <ListingCard record={record} decimals={usdc.decimals} symbol={usdc.symbol} onChanged={() => void refetch()} />
+              )}
+            />
+          </Card>
 
-          {shown.some((r) => isListingClosed(r.state)) && filter === "all" ? (
+          {filter === "all" && shown.some((r) => isListingClosed(r.state)) ? (
             <p className="text-xs text-muted">Closed listings (claimed or cancelled) are shown for history.</p>
           ) : null}
         </>

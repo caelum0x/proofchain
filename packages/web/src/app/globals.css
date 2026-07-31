@@ -2,12 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/*
+ * Theme variables — the runtime side of src/design/tokens.ts. Every color is an
+ * RGB channel triplet consumed by Tailwind as `rgb(var(--token) / <alpha>)`.
+ * Dark is the default (:root); light applies under [data-theme="light"].
+ */
+:root,
+[data-theme="dark"] {
   color-scheme: dark;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
-    monospace;
+
+  --bg: 11 14 20;
+  --surface: 18 23 34;
+  --surface-2: 26 33 48;
+  --border: 35 44 61;
+  --text: 230 237 243;
+  --muted: 154 167 184;
+  --faint: 92 107 128;
+  --primary: 59 130 246;
+  --primary-hi: 96 165 250;
+  --primary-fg: 255 255 255;
+  --primary-soft: 34 48 94;
+  --success: 34 197 94;
+  --warn: 245 158 11;
+  --danger: 239 68 68;
+  --info: 56 189 248;
+
+  --accent-finance: 34 197 94;
+  --accent-compliance: 245 158 11;
+  --accent-dpp: 139 92 246;
+  --accent-logistics: 56 189 248;
+  --accent-sustainability: 16 185 129;
+  --accent-workforce: 236 72 153;
+  --accent-governance: 167 139 250;
+  --accent-markets: 249 115 22;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: 246 248 251;
+  --surface: 255 255 255;
+  --surface-2: 238 242 248;
+  --border: 213 220 231;
+  --text: 11 14 20;
+  --muted: 85 98 122;
+  --faint: 133 147 168;
+  --primary: 59 130 246;
+  --primary-hi: 37 99 235;
+  --primary-fg: 255 255 255;
+  --primary-soft: 220 232 255;
+  --success: 22 163 74;
+  --warn: 217 119 6;
+  --danger: 220 38 38;
+  --info: 2 132 199;
 }
 
 html,
@@ -17,10 +69,31 @@ body {
 
 body {
   @apply bg-bg text-fg antialiased;
+  font-feature-settings: "tnum" 1, "cv11" 1;
   background-image:
-    radial-gradient(60rem 60rem at 80% -10%, rgba(79, 124, 255, 0.12), transparent),
-    radial-gradient(50rem 50rem at -10% 10%, rgba(47, 191, 113, 0.08), transparent);
+    radial-gradient(60rem 60rem at 80% -10%, rgb(var(--primary) / 0.1), transparent),
+    radial-gradient(50rem 50rem at -10% 10%, rgb(var(--accent-sustainability) / 0.06), transparent);
   background-attachment: fixed;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+/* Tabular figures for hashes / amounts / metrics. */
+.tabular-nums,
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer components {
@@ -43,5 +116,11 @@ body {
   .input {
     @apply w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg
       placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40;
+  }
+
+  /* Consistent, visible focus ring for keyboard users (WCAG AA). */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/60
+      focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
   }
 }

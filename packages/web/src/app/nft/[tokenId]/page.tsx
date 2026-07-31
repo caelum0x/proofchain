@@ -7,20 +7,16 @@ import { NFT_COLLECTIONS, isNftCollection, useNft, type NftCollectionName } from
 import { useNftMetadata } from "@/hooks/useNftMetadata";
 import { NftActions } from "@/components/nft/NftActions";
 import { RequireWallet } from "@/components/RequireWallet";
+import { DetailShell } from "@/components/shells/DetailShell";
+import { PageHeader } from "@/components/page/PageHeader";
+import { InfoCard, DefinitionList, type DefinitionItem } from "@/components/t5/DefinitionList";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { AddressLink } from "@/components/ui/TxLink";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { AddressBadge } from "@/components/ui/AddressBadge";
+import { Button } from "@/components/ui/Button";
 import { ErrorState, LoadingState } from "@/components/ui/States";
 import { ipfsToHttp, formatTokenAmount, shortenHex } from "@/lib/format";
 import { getErrorMessage } from "@/lib/errors";
-
-export default function NftDetailPage() {
-  return (
-    <Suspense fallback={<LoadingState label="Loading token…" />}>
-      <NftDetailInner />
-    </Suspense>
-  );
-}
 
 function NftDetailInner() {
   const params = useParams<{ tokenId: string }>();
@@ -41,34 +37,85 @@ function NftDetailInner() {
   const image = metadata.data?.image ? ipfsToHttp(metadata.data.image) : undefined;
   const name = metadata.data?.name ?? `Token #${rawId}`;
   const label = NFT_COLLECTIONS.find((c) => c.name === collection)?.label ?? collection;
+  const displayId = rawId && rawId.length > 14 ? shortenHex(rawId, 6, 6) : rawId;
+
+  const detailItems: DefinitionItem[] = [
+    { label: "Owner", value: nft.owner ? <AddressBadge address={nft.owner} /> : "—", wide: true },
+    { label: "Collection", value: label },
+    { label: "Token id", value: <span className="font-mono">{displayId}</span> },
+  ];
+  if (nft.batchId) {
+    detailItems.push({
+      label: "Batch",
+      value: (
+        <Link href={`/batches/${nft.batchId}`} className="font-mono text-xs text-brand hover:underline">
+          {shortenHex(nft.batchId, 6, 6)}
+        </Link>
+      ),
+      wide: true,
+    });
+  }
+  if (nft.receipt) {
+    detailItems.push(
+      { label: "Quantity", value: <span className="font-mono">{formatTokenAmount(nft.receipt.quantity, 0)}</span> },
+      { label: "Location", value: nft.receipt.location || "—" },
+      {
+        label: "Status",
+        value: <StatusBadge status={nft.receipt.redeemed ? "neutral" : "success"}>{nft.receipt.redeemed ? "Redeemed" : "Active"}</StatusBadge>,
+      },
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link href="/nft" className="text-xs text-brand hover:underline">
-            ← All assets
-          </Link>
-          <h1 className="mt-1 text-2xl font-semibold">{name}</h1>
-          <p className="font-mono text-xs text-muted">
-            {label} · #{rawId && rawId.length > 14 ? shortenHex(rawId, 6, 6) : rawId}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {NFT_COLLECTIONS.map((c) => (
-            <Link
-              key={c.name}
-              href={`/nft/${rawId}?collection=${c.name}`}
-              className={
-                c.name === collection
-                  ? "rounded-lg border border-brand bg-brand/10 px-3 py-1.5 text-xs text-brand"
-                  : "rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-muted hover:bg-surface-2"
-              }
-            >
-              {c.label}
+    <DetailShell
+      header={
+        <PageHeader
+          title={name}
+          subtitle={`${label} · #${displayId}`}
+          breadcrumbs={[{ label: "Markets" }, { label: "Tokenized assets", href: "/nft" }, { label: `#${displayId}` }]}
+          icon="nft"
+          accentClassName="text-markets"
+          actions={
+            <Link href="/nft">
+              <Button variant="secondary" size="sm">
+                All assets
+              </Button>
             </Link>
-          ))}
-        </div>
+          }
+        />
+      }
+      rail={
+        <>
+          <InfoCard title="Details" items={detailItems} />
+          <Card>
+            <CardHeader title="Actions" />
+            <RequireWallet>
+              <NftActions
+                collection={collection}
+                tokenId={tokenId}
+                owner={nft.owner}
+                redeemable={collection === "WarehouseReceipt" && nft.receipt?.redeemed === false}
+                onDone={nft.refetch}
+              />
+            </RequireWallet>
+          </Card>
+        </>
+      }
+    >
+      <div className="flex flex-wrap gap-2">
+        {NFT_COLLECTIONS.map((c) => (
+          <Link
+            key={c.name}
+            href={`/nft/${rawId}?collection=${c.name}`}
+            className={
+              c.name === collection
+                ? "rounded-lg border border-markets bg-markets/10 px-3 py-1.5 text-xs text-markets"
+                : "rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-muted hover:bg-surface-2"
+            }
+          >
+            {c.label}
+          </Link>
+        ))}
       </div>
 
       {nft.isLoading ? (
@@ -79,9 +126,9 @@ function NftDetailInner() {
           message={`No ${label} token with this id exists. Try another collection above. (${getErrorMessage(nft.error)})`}
         />
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <>
           <Card className="p-0">
-            <div className="flex aspect-square items-center justify-center overflow-hidden rounded-t-xl bg-surface-2">
+            <div className="flex aspect-video items-center justify-center overflow-hidden rounded-t-xl bg-surface-2">
               {image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={image} alt={name} className="h-full w-full object-cover" />
@@ -89,67 +136,39 @@ function NftDetailInner() {
                 <span className="font-mono text-sm text-muted">No image</span>
               )}
             </div>
-            {metadata.data?.description ? (
-              <p className="p-4 text-sm text-muted">{metadata.data.description}</p>
-            ) : null}
+            {metadata.data?.description ? <p className="p-5 text-sm text-muted">{metadata.data.description}</p> : null}
           </Card>
 
-          <div className="space-y-6">
+          {metadata.data?.attributes && metadata.data.attributes.length > 0 ? (
             <Card>
-              <CardHeader title="Details" />
-              <dl className="grid grid-cols-2 gap-3 text-sm">
-                <Info label="Owner">{nft.owner ? <AddressLink address={nft.owner} /> : "—"}</Info>
-                <Info label="Collection">{label}</Info>
-                {nft.batchId ? (
-                  <Info label="Batch">
-                    <Link href={`/disputes/${nft.batchId}`} className="font-mono text-xs text-brand hover:underline">
-                      {shortenHex(nft.batchId, 6, 6)}
-                    </Link>
-                  </Info>
-                ) : null}
-                {nft.receipt ? (
-                  <>
-                    <Info label="Quantity">{formatTokenAmount(nft.receipt.quantity, 0)}</Info>
-                    <Info label="Location">{nft.receipt.location || "—"}</Info>
-                    <Info label="Status">
-                      {nft.receipt.redeemed ? <Badge tone="neutral">Redeemed</Badge> : <Badge tone="success">Active</Badge>}
-                    </Info>
-                  </>
-                ) : null}
-                {nft.tokenURI ? (
-                  <Info label="Metadata">
-                    <a href={ipfsToHttp(nft.tokenURI)} target="_blank" rel="noreferrer noopener" className="text-brand hover:underline">
-                      Open URI
-                    </a>
-                  </Info>
-                ) : null}
-              </dl>
+              <CardHeader title="Attributes" />
+              <DefinitionList
+                items={metadata.data.attributes.map((attr) => ({
+                  label: attr.trait_type ?? "Trait",
+                  value: String(attr.value ?? "—"),
+                }))}
+              />
             </Card>
+          ) : null}
 
+          {nft.tokenURI ? (
             <Card>
-              <CardHeader title="Actions" />
-              <RequireWallet>
-                <NftActions
-                  collection={collection}
-                  tokenId={tokenId}
-                  owner={nft.owner}
-                  redeemable={collection === "WarehouseReceipt" && nft.receipt?.redeemed === false}
-                  onDone={nft.refetch}
-                />
-              </RequireWallet>
+              <CardHeader title="Metadata" />
+              <a href={ipfsToHttp(nft.tokenURI)} target="_blank" rel="noreferrer noopener" className="break-all text-sm text-brand hover:underline">
+                {nft.tokenURI}
+              </a>
             </Card>
-          </div>
-        </div>
+          ) : null}
+        </>
       )}
-    </div>
+    </DetailShell>
   );
 }
 
-function Info({ label, children }: { label: string; children: React.ReactNode }) {
+export default function NftDetailPage() {
   return (
-    <div>
-      <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
-      <dd className="mt-0.5 text-fg">{children}</dd>
-    </div>
+    <Suspense fallback={<LoadingState label="Loading token…" />}>
+      <NftDetailInner />
+    </Suspense>
   );
 }

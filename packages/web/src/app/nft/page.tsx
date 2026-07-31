@@ -1,89 +1,113 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useMemo } from "react";
 import { useAccount } from "wagmi";
-import { NFT_COLLECTIONS, useNftCollection, type NftCollectionName } from "@/hooks/useNfts";
+import { NFT_COLLECTIONS, useNftCollection, isNftCollection, type NftCollectionName, type NftItem } from "@/hooks/useNfts";
+import { useListParams } from "@/hooks/t5-useListParams";
+import { ResourceListView } from "@/components/t5/ResourceListView";
+import { SearchInput, SelectFilter } from "@/components/t5/Filters";
+import { applyTableState, compareBigint, type Comparator } from "@/components/t5/table-utils";
+import { fmtNumber } from "@/components/t5/format";
 import { NftCard } from "@/components/nft/NftCard";
-import { Card } from "@/components/ui/Card";
+import { CardGrid } from "@/components/ui/CardGrid";
+import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
-import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
-import { getErrorMessage } from "@/lib/errors";
-import { cn } from "@/lib/cn";
+import { EmptyState, LoadingState } from "@/components/ui/States";
 
-export default function NftPage() {
+const COLLECTION_OPTIONS = NFT_COLLECTIONS.map((c) => ({ value: c.name, label: c.label }));
+
+const comparators: Readonly<Record<string, Comparator<NftItem>>> = {
+  tokenId: (a, b) => compareBigint(a.tokenId, b.tokenId),
+};
+
+function NftInner() {
   const { address } = useAccount();
-  const [active, setActive] = useState<NftCollectionName>("BatchNFT");
-  const [mineOnly, setMineOnly] = useState(false);
+  const params = useListParams({ facets: ["collection", "mine"], defaultSort: "tokenId", limit: 12 });
 
-  const collection = useNftCollection(active, mineOnly ? address : undefined);
-  const meta = NFT_COLLECTIONS.find((c) => c.name === active);
+  const collectionParam = params.facet("collection");
+  const collection: NftCollectionName = isNftCollection(collectionParam) ? collectionParam : "BatchNFT";
+  const mineOnly = params.facet("mine") === "1";
+
+  const result = useNftCollection(collection, mineOnly ? address : undefined);
+  const meta = NFT_COLLECTIONS.find((c) => c.name === collection);
+
+  const { rows, total } = useMemo(
+    () =>
+      applyTableState({
+        rows: result.items,
+        q: params.q,
+        search: (item) => `${item.tokenId} ${item.owner}`,
+        sortId: params.sortId,
+        sortDir: params.sortDir,
+        comparators,
+        page: params.page,
+        limit: params.limit,
+      }),
+    [result.items, params.q, params.sortId, params.sortDir, params.page, params.limit],
+  );
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Tokenized assets</h1>
-        <p className="mt-1 text-sm text-muted">
-          Batch titles, receivable NFTs, and warehouse receipts — transferable on-chain claims minted
-          across the ProofChain lifecycle.
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {NFT_COLLECTIONS.map((c) => (
-            <button
-              key={c.name}
-              type="button"
-              onClick={() => setActive(c.name)}
-              className={cn(
-                "rounded-lg border px-3 py-1.5 text-sm transition-colors",
-                active === c.name
-                  ? "border-brand bg-brand/10 text-brand"
-                  : "border-border bg-surface text-muted hover:bg-surface-2",
-              )}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
-        <Button
-          variant={mineOnly ? "primary" : "secondary"}
-          size="sm"
-          onClick={() => setMineOnly((v) => !v)}
-          disabled={!address}
-        >
-          {mineOnly ? "Showing mine" : "Show only mine"}
-        </Button>
-      </div>
-
-      {meta ? (
-        <Card className="bg-surface/60">
-          <p className="text-sm text-muted">{meta.description}</p>
-        </Card>
-      ) : null}
-
-      {collection.notDeployed ? (
-        <EmptyState title="Collection not deployed" description={`${meta?.label ?? active} is not configured on this network.`} />
-      ) : collection.isLoading ? (
-        <LoadingState label="Indexing tokens…" />
-      ) : collection.isError ? (
-        <ErrorState message={getErrorMessage(collection.error)} onRetry={collection.refetch} />
-      ) : collection.items.length === 0 ? (
-        <EmptyState
-          title={mineOnly ? "You own no tokens here" : "No tokens minted yet"}
-          description={
-            mineOnly
-              ? "Tokens you own in this collection will appear here."
-              : "Minted tokens in this collection will appear here in real time."
-          }
-        />
+    <ResourceListView
+      title="Tokenized assets"
+      subtitle="Batch titles, receivable NFTs, and warehouse receipts — transferable on-chain claims minted across the lifecycle."
+      breadcrumbs={[{ label: "Markets" }, { label: "Tokenized assets" }]}
+      icon="nft"
+      accentClassName="text-markets"
+      kpis={[
+        { label: "Tokens", value: fmtNumber(result.items.length) },
+        { label: "Collection", value: meta?.label ?? collection },
+        { label: "Holders", value: fmtNumber(new Set(result.items.map((i) => i.owner)).size) },
+      ]}
+      kpisLoading={result.isLoading}
+      toolbar={
+        <>
+          <SearchInput value={params.q} onChange={params.setQ} placeholder="Search token id or owner" />
+          <SelectFilter
+            label="Collection"
+            value={collection}
+            allLabel={meta?.label ?? "Collection"}
+            onChange={(v) => params.setFacet("collection", v || null)}
+            options={COLLECTION_OPTIONS}
+          />
+          <Button
+            variant={mineOnly ? "primary" : "secondary"}
+            size="sm"
+            disabled={!address}
+            onClick={() => params.setFacet("mine", mineOnly ? null : "1")}
+          >
+            {mineOnly ? "Showing mine" : "Show only mine"}
+          </Button>
+        </>
+      }
+    >
+      {result.notDeployed ? (
+        <EmptyState title="Collection not deployed" description={`${meta?.label ?? collection} is not configured on this network.`} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {collection.items.map((item) => (
-            <NftCard key={`${item.collection}-${item.tokenId}`} item={item} />
-          ))}
-        </div>
+        <>
+          <CardGrid
+            items={rows}
+            getKey={(item) => `${item.collection}-${item.tokenId}`}
+            minColWidth={240}
+            isLoading={result.isLoading}
+            error={result.isError ? "Failed to index tokens." : null}
+            onRetry={result.refetch}
+            emptyTitle={mineOnly ? "You own no tokens here" : "No tokens minted yet"}
+            emptyDescription={
+              mineOnly ? "Tokens you own in this collection will appear here." : "Minted tokens will appear here in real time."
+            }
+            renderItem={(item) => <NftCard item={item} />}
+          />
+          <Pagination page={params.page} limit={params.limit} total={total} onPageChange={params.setPage} />
+        </>
       )}
-    </div>
+    </ResourceListView>
+  );
+}
+
+export default function NftPage() {
+  return (
+    <Suspense fallback={<LoadingState label="Loading tokenized assets…" />}>
+      <NftInner />
+    </Suspense>
   );
 }

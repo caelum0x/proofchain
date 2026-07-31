@@ -1,27 +1,39 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRegistryDirectory } from "@/hooks/useRegistryDirectory";
-import { ProfileGrid } from "@/components/directory/ProfileGrid";
+import { PageHeader, KpiRow } from "@/components/page";
+import { ActorDirectory } from "@/components/t6/ActorDirectory";
 
 /**
- * Carrier directory: logistics carriers registered in `CarrierRegistry`. These
- * are the actors authorised to push IoT/location checkpoints into provenance.
- * Carriers have no dedicated detail page, so the cards are non-linking.
+ * Carrier directory (WD §3): logistics carriers registered in `CarrierRegistry`
+ * — the actors authorised to push IoT/location checkpoints into provenance.
  */
 export default function CarriersPage() {
-  const { profiles, isLoading, isError, error, notDeployed, refetch } =
-    useRegistryDirectory("CarrierRegistry", "CarrierRegistered");
+  const { profiles, isLoading, isError, error, notDeployed, refetch } = useRegistryDirectory(
+    "CarrierRegistry",
+    "CarrierRegistered",
+  );
+
+  const named = useMemo(() => profiles.filter((p) => p.name.trim().length > 0).length, [profiles]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Carriers</h1>
-        <p className="mt-1 text-sm text-muted">
-          Logistics carriers that transport shipments and push provenance checkpoints.
-        </p>
-      </div>
+      <PageHeader
+        icon="carriers"
+        title="Carriers"
+        subtitle="Logistics carriers that transport shipments and push provenance checkpoints."
+        breadcrumbs={[{ label: "Identity" }, { label: "Carriers" }]}
+      />
 
-      <ProfileGrid
+      <KpiRow
+        items={[
+          { label: "Carriers", value: profiles.length, loading: isLoading },
+          { label: "With profile name", value: named, loading: isLoading },
+        ]}
+      />
+
+      <ActorDirectory
         profiles={profiles}
         isLoading={isLoading}
         isError={isError}

@@ -11,13 +11,17 @@ import { ReceivableSummary } from "@/components/invoices/ReceivableSummary";
 import { RegisterReceivableForm } from "@/components/invoices/RegisterReceivableForm";
 import { InvoiceFinancingPanel } from "@/components/invoices/InvoiceFinancingPanel";
 import { RequireWallet } from "@/components/RequireWallet";
+import { DetailShell } from "@/components/shells/DetailShell";
+import { PageHeader } from "@/components/page/PageHeader";
+import { AsyncBoundary } from "@/components/page/AsyncBoundary";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AddressBadge } from "@/components/ui/AddressBadge";
-import { EmptyState, LoadingState } from "@/components/ui/States";
+import { EmptyState } from "@/components/ui/States";
 import { isBytes32 } from "@/lib/hashing";
 import { getResolvedAddress } from "@/lib/shared";
-import { shortenHex } from "@/lib/format";
+import { getErrorMessage } from "@/lib/errors";
+import { Bytes32Cell } from "@/components/t2/Bytes32Cell";
 
 /**
  * Invoice / receivable detail: provenance + attestation context, registered
@@ -28,19 +32,25 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ batchI
   const { batchId: raw } = use(params);
   const batchId = isBytes32(raw) ? (raw as Hex) : undefined;
 
+  const breadcrumbs = [
+    { label: "Trade Finance" },
+    { label: "Invoices", href: "/invoices" },
+    { label: "Detail" },
+  ];
+
   if (!batchId) {
     return (
       <div className="space-y-6">
-        <BackLink />
+        <PageHeader title="Invoice" breadcrumbs={breadcrumbs} icon="finance" accentClassName="text-finance" />
         <EmptyState title="Invalid batch id" description="An invoice id must be a 32-byte 0x… hex value." />
       </div>
     );
   }
 
-  return <InvoiceDetail batchId={batchId} />;
+  return <InvoiceDetail batchId={batchId} breadcrumbs={breadcrumbs} />;
 }
 
-function InvoiceDetail({ batchId }: { batchId: Hex }) {
+function InvoiceDetail({ batchId, breadcrumbs }: { batchId: Hex; breadcrumbs: { label: string; href?: string }[] }) {
   const { address: account } = useAccount();
   const detail = useBatchDetail(batchId);
   const supplier = detail.batch?.supplier;
@@ -57,94 +67,93 @@ function InvoiceDetail({ batchId }: { batchId: Hex }) {
     receivable.refetch();
   };
 
+  const header = (
+    <PageHeader
+      icon="finance"
+      accentClassName="text-finance"
+      title="Invoice"
+      subtitle={<Bytes32Cell value={batchId} lead={8} tail={8} />}
+      breadcrumbs={breadcrumbs}
+      actions={
+        <>
+          {attested ? <StatusBadge status="success">Attested</StatusBadge> : <StatusBadge status="warn">Unattested</StatusBadge>}
+          {detail.deal ? <StatusBadge status="brand">Deal on-chain</StatusBadge> : null}
+        </>
+      }
+    />
+  );
+
+  const rail = (
+    <>
+      {supplier ? (
+        <Card>
+          <CardHeader title="Supplier" />
+          <AddressBadge address={supplier} />
+        </Card>
+      ) : null}
+
+      {deployed ? (
+        <InvoiceFinancingPanel
+          batchId={batchId}
+          listing={receivable.listing}
+          isSupplier={isSupplier}
+          attested={attested}
+          decimals={usdc.decimals}
+          symbol={usdc.symbol}
+          claimQuote={receivable.claimQuote}
+          onChanged={onChanged}
+        />
+      ) : null}
+
+      <Card>
+        <CardHeader title="Provenance" description="Checkpoints recorded for this batch." />
+        <p className="text-sm text-fg/90">
+          {detail.checkpoints.length} checkpoint{detail.checkpoints.length === 1 ? "" : "s"} recorded.{" "}
+          <Link href={`/deals/${batchId}`} className="text-brand hover:underline">
+            View full timeline →
+          </Link>
+        </p>
+      </Card>
+    </>
+  );
+
   return (
-    <div className="space-y-6">
-      <BackLink />
-
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-mono text-2xl font-semibold">{shortenHex(batchId, 8, 8)}</h1>
-          {supplier ? (
-            <p className="mt-1 flex items-center gap-2 text-sm text-muted">
-              Supplier <AddressBadge address={supplier} />
-            </p>
-          ) : null}
-        </div>
-        <div className="flex gap-2">
-          {attested ? <Badge tone="success">Attested</Badge> : <Badge tone="warn">Unattested</Badge>}
-          {detail.deal ? <Badge tone="brand">Deal on-chain</Badge> : null}
-        </div>
-      </div>
-
-      {detail.isLoading ? (
-        <LoadingState label="Loading on-chain state…" />
-      ) : !detail.batch ? (
-        <EmptyState
-          title="Batch not registered"
-          description="This batch id has not been registered in the provenance registry."
-          action={
-            <Link href="/explorer" className="text-brand hover:underline">
-              Browse registered batches
-            </Link>
-          }
-        />
-      ) : !deployed ? (
-        <EmptyState
-          title="Financing is not available on this network"
-          description="The InvoiceFinancing contract is not deployed for the configured chain."
-        />
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <ReceivableSummary
-            receivable={receivable}
-            attestationScore={detail.attestation?.score ?? null}
-            decimals={usdc.decimals}
-            symbol={usdc.symbol}
+    <DetailShell header={header} rail={rail}>
+      <AsyncBoundary
+        isLoading={detail.isLoading}
+        error={detail.isError ? getErrorMessage(detail.error) : null}
+        onRetry={() => detail.refetch()}
+        isEmpty={!detail.batch}
+        emptyTitle="Batch not registered"
+        emptyDescription="This batch id has not been registered in the provenance registry."
+        emptyAction={
+          <Link href="/explorer" className="text-brand hover:underline">
+            Browse registered batches
+          </Link>
+        }
+      >
+        {!deployed ? (
+          <EmptyState
+            title="Financing is not available on this network"
+            description="The InvoiceFinancing contract is not deployed for the configured chain."
           />
-
-          <div className="space-y-6">
-            <InvoiceFinancingPanel
-              batchId={batchId}
-              listing={receivable.listing}
-              isSupplier={isSupplier}
-              attested={attested}
+        ) : (
+          <>
+            <ReceivableSummary
+              receivable={receivable}
+              attestationScore={detail.attestation?.score ?? null}
               decimals={usdc.decimals}
               symbol={usdc.symbol}
-              claimQuote={receivable.claimQuote}
-              onChanged={onChanged}
             />
 
             {needsTerms && isSupplier ? (
               <RequireWallet>
-                <RegisterReceivableForm
-                  batchId={batchId}
-                  decimals={usdc.decimals}
-                  symbol={usdc.symbol}
-                  onRegistered={onChanged}
-                />
+                <RegisterReceivableForm batchId={batchId} decimals={usdc.decimals} symbol={usdc.symbol} onRegistered={onChanged} />
               </RequireWallet>
             ) : null}
-
-            <Card>
-              <CardHeader title="Provenance" description="Checkpoints recorded for this batch." />
-              <p className="text-sm text-fg/90">
-                {detail.checkpoints.length} checkpoint{detail.checkpoints.length === 1 ? "" : "s"} recorded.{" "}
-                <Link href={`/deals/${batchId}`} className="text-brand hover:underline">
-                  View full timeline →
-                </Link>
-              </p>
-            </Card>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function BackLink() {
-  return (
-    <Link href="/finance" className="text-sm text-brand hover:underline">
-      ← Financing marketplace
-    </Link>
+          </>
+        )}
+      </AsyncBoundary>
+    </DetailShell>
   );
 }
