@@ -15,7 +15,7 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import {
   attestationRegistryAbi,
-  baseSepolia,
+  chainForId,
   CONTRACTS,
   provenanceRegistryAbi,
   settlementEscrowAbi,
@@ -66,15 +66,16 @@ const resolveAddresses = (chainId: number): RequiredAddresses => {
 export const createViemChainClient = (config: AppConfig): ChainClient => {
   const account: Account = privateKeyToAccount(config.AGENT_PRIVATE_KEY as Hex);
   const addresses = resolveAddresses(config.CHAIN_ID);
+  const chain = chainForId(config.CHAIN_ID, config.BASE_SEPOLIA_RPC_URL);
   const transport = http(config.BASE_SEPOLIA_RPC_URL);
 
   const publicClient: PublicClient = createPublicClient({
-    chain: baseSepolia,
+    chain,
     transport,
   });
   const walletClient: WalletClient = createWalletClient({
     account,
-    chain: baseSepolia,
+    chain,
     transport,
   });
 
@@ -177,7 +178,7 @@ export const createViemChainClient = (config: AppConfig): ChainClient => {
       try {
         const txHash = await walletClient.writeContract({
           account,
-          chain: baseSepolia,
+          chain,
           address: addresses.attestationRegistry,
           abi: attestationRegistryAbi,
           functionName: 'attest',
@@ -201,7 +202,7 @@ export const createViemChainClient = (config: AppConfig): ChainClient => {
       try {
         const txHash = await walletClient.writeContract({
           account,
-          chain: baseSepolia,
+          chain,
           address: addresses.settlementEscrow,
           abi: settlementEscrowAbi,
           functionName: 'settle',

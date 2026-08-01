@@ -44,7 +44,7 @@ export interface VerificationVerdict {
 // Chain config
 // ---------------------------------------------------------------------------
 
-export const CHAIN_ID = 84532 as const;
+export const CHAIN_ID = 11155111 as const;
 
 export const baseSepolia: Chain = {
   id: 84532,
@@ -57,6 +57,26 @@ export const baseSepolia: Chain = {
     default: { name: 'BaseScan', url: 'https://sepolia.basescan.org' },
   },
   testnet: true,
+};
+
+export const ethereumSepolia: Chain = {
+  id: 11155111,
+  name: 'Sepolia',
+  nativeCurrency: { name: 'Sepolia Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://ethereum-sepolia-rpc.publicnode.com'] },
+  },
+  blockExplorers: {
+    default: { name: 'Etherscan', url: 'https://sepolia.etherscan.io' },
+  },
+  testnet: true,
+};
+
+/** Resolve the viem chain for a supported id, optionally overriding the RPC. */
+export const chainForId = (chainId: number, rpcUrl?: string): Chain => {
+  const base = chainId === 84532 ? baseSepolia : ethereumSepolia;
+  if (rpcUrl === undefined) return base;
+  return { ...base, rpcUrls: { ...base.rpcUrls, default: { http: [rpcUrl] } } };
 };
 
 // ---------------------------------------------------------------------------
@@ -75,13 +95,16 @@ export type ContractAddresses = Readonly<
   Partial<Record<ContractName, `0x${string}`>>
 >;
 
+const PLACEHOLDER_ADDRESSES: ContractAddresses = {
+  ProvenanceRegistry: '0x1111111111111111111111111111111111111111',
+  AttestationRegistry: '0x2222222222222222222222222222222222222222',
+  SettlementEscrow: '0x3333333333333333333333333333333333333333',
+  MockUSDC: '0x4444444444444444444444444444444444444444',
+};
+
 export const CONTRACTS: Record<number, ContractAddresses> = {
-  84532: {
-    ProvenanceRegistry: '0x1111111111111111111111111111111111111111',
-    AttestationRegistry: '0x2222222222222222222222222222222222222222',
-    SettlementEscrow: '0x3333333333333333333333333333333333333333',
-    MockUSDC: '0x4444444444444444444444444444444444444444',
-  },
+  11155111: PLACEHOLDER_ADDRESSES,
+  84532: PLACEHOLDER_ADDRESSES,
 };
 
 // ---------------------------------------------------------------------------

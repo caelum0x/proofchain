@@ -34,11 +34,12 @@ const rawEnvSchema = z.object({
   // --- Required secrets / connectivity ---
   ANTHROPIC_API_KEY: z.string().min(1, 'ANTHROPIC_API_KEY is required'),
   AGENT_PRIVATE_KEY: hexPrivateKey,
+  // JSON-RPC endpoint for the target chain (Ethereum Sepolia by default).
   BASE_SEPOLIA_RPC_URL: z.string().url('BASE_SEPOLIA_RPC_URL must be a URL'),
 
   // --- Optional behavior ---
   SETTLE_ON_ATTEST: booleanish.default('false'),
-  CHAIN_ID: z.coerce.number().int().positive().default(84_532),
+  CHAIN_ID: z.coerce.number().int().positive().default(11_155_111),
   PASS_THRESHOLD_BPS: z.coerce
     .number()
     .int()

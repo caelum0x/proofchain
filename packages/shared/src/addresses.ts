@@ -4,7 +4,14 @@ import { getAddress, isAddress } from "viem";
 import { z } from "zod";
 
 import { CONTRACT_NAMES, type ContractName } from "./abis/index";
-import { CHAIN_ID, type ChainId, readEnv } from "./chains";
+import {
+  BASE_SEPOLIA_CHAIN_ID,
+  CHAIN_ID,
+  ETHEREUM_SEPOLIA_CHAIN_ID,
+  SUPPORTED_CHAIN_IDS,
+  type ChainId,
+  readEnv,
+} from "./chains";
 import {
   DeploymentParseError,
   InvalidAddressError,
@@ -55,12 +62,18 @@ const ENV_OVERRIDES: Readonly<Record<ContractName, readonly string[]>> =
     ) as Record<ContractName, readonly string[]>,
   );
 
-/** Env var that overrides the deployment manifest file path. */
+/** Env var that overrides the deployment manifest file path (active chain). */
 export const DEPLOYMENTS_PATH_ENV = "PROOFCHAIN_DEPLOYMENTS_FILE";
 
-/** Default location of the contracts deployment manifest. */
-export const DEFAULT_DEPLOYMENTS_PATH =
-  "packages/contracts/deployments/base-sepolia.json";
+/** Default deployment manifest location per supported chain id. */
+export const DEFAULT_DEPLOYMENTS_PATHS: Readonly<Record<ChainId, string>> =
+  Object.freeze({
+    [ETHEREUM_SEPOLIA_CHAIN_ID]: "packages/contracts/deployments/sepolia.json",
+    [BASE_SEPOLIA_CHAIN_ID]: "packages/contracts/deployments/base-sepolia.json",
+  });
+
+/** Default location of the ACTIVE chain's deployment manifest. */
+export const DEFAULT_DEPLOYMENTS_PATH = DEFAULT_DEPLOYMENTS_PATHS[CHAIN_ID];
 
 /**
  * Validate and checksum a raw address string. Throws {@link InvalidAddressError}
@@ -183,15 +196,35 @@ function loadNodeFs(): typeof import("node:fs") | null {
 }
 
 /**
+ * Read the deployment manifest for a specific chain id. The active chain honors
+ * the {@link DEPLOYMENTS_PATH_ENV} override (via {@link readDeploymentManifest});
+ * other chains fall back to their canonical default path. Returns `null` when
+ * the file is absent (graceful degradation — e.g. browser bundles).
+ */
+export function readDeploymentManifestForChain(
+  chainId: ChainId,
+): unknown | null {
+  if (chainId === CHAIN_ID) return readDeploymentManifest();
+  return readDeploymentManifest(DEFAULT_DEPLOYMENTS_PATHS[chainId]);
+}
+
+/**
  * The typed contract address map keyed by chain id. Resolved once at import
- * time from env overrides + the on-disk manifest (when present).
+ * time from env overrides + the on-disk manifest (when present). Every
+ * supported chain gets an entry (Ethereum Sepolia ← sepolia.json, Base Sepolia
+ * ← base-sepolia.json); env overrides apply to whichever chain is active.
  */
 export const CONTRACTS: Readonly<Record<ChainId, ContractAddresses>> =
-  Object.freeze({
-    [CHAIN_ID]: resolveContractAddresses({
-      manifest: readDeploymentManifest(),
-    }),
-  });
+  Object.freeze(
+    Object.fromEntries(
+      SUPPORTED_CHAIN_IDS.map((chainId) => [
+        chainId,
+        resolveContractAddresses({
+          manifest: readDeploymentManifestForChain(chainId),
+        }),
+      ]),
+    ) as Record<ChainId, ContractAddresses>,
+  );
 
 /**
  * Get a required contract address for a chain, throwing a structured
@@ -199,9 +232,9 @@ export const CONTRACTS: Readonly<Record<ChainId, ContractAddresses>> =
  */
 export function getContractAddress(
   name: ContractName,
-  chainId: ChainId = CHAIN_ID,
+  chainId: number = CHAIN_ID,
 ): Address {
-  const forChain = CONTRACTS[chainId];
+  const forChain = CONTRACTS[chainId as ChainId];
   const address = forChain?.[name];
   if (address === undefined) {
     throw new MissingAddressError(
@@ -216,7 +249,7 @@ export function getContractAddress(
 /** Non-throwing lookup: returns `undefined` when unconfigured. */
 export function tryGetContractAddress(
   name: ContractName,
-  chainId: ChainId = CHAIN_ID,
+  chainId: number = CHAIN_ID,
 ): Address | undefined {
-  return CONTRACTS[chainId]?.[name];
+  return CONTRACTS[chainId as ChainId]?.[name];
 }

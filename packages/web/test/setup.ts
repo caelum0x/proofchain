@@ -4,7 +4,7 @@ import "@testing-library/jest-dom/vitest";
 process.env.NEXT_PUBLIC_WALLETCONNECT_ID ||= "test-walletconnect-id";
 process.env.NEXT_PUBLIC_AGENT_API_URL ||= "http://agent.test";
 process.env.NEXT_PUBLIC_API_URL ||= "http://api.test";
-process.env.NEXT_PUBLIC_CHAIN_ID ||= "84532";
+process.env.NEXT_PUBLIC_CHAIN_ID ||= "11155111";
 
 // jsdom's Blob/File implementation omits the standard `arrayBuffer()` method
 // that real browsers provide. Polyfill it (via FileReader, which jsdom does

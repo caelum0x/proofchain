@@ -20,6 +20,8 @@ export {
   CHAIN_ID,
   CONTRACTS,
   baseSepolia,
+  ethereumSepolia,
+  chainForId,
   provenanceRegistryAbi,
   attestationRegistryAbi,
   settlementEscrowAbi,

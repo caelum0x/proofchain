@@ -10,7 +10,7 @@ describe('loadConfig', () => {
   it('applies defaults for a minimal valid env', () => {
     const cfg = loadConfig({ ...base });
     expect(cfg.API_PORT).toBe(8081);
-    expect(cfg.CHAIN_ID).toBe(84_532);
+    expect(cfg.CHAIN_ID).toBe(11_155_111);
     expect(cfg.CORS_ORIGIN).toBe('*');
     expect(cfg.INDEXER_ENABLED).toBe(false);
     expect(cfg.INDEXER_BLOCK_RANGE).toBe(2000n);

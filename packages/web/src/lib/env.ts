@@ -11,6 +11,10 @@ import { z } from "zod";
  */
 
 export const BASE_SEPOLIA_CHAIN_ID = 84532 as const;
+export const ETHEREUM_SEPOLIA_CHAIN_ID = 11155111 as const;
+
+/** The network the dApp targets. ProofChain runs LIVE on Ethereum Sepolia. */
+export const EXPECTED_CHAIN_ID = ETHEREUM_SEPOLIA_CHAIN_ID;
 
 const bigintishSchema = z
   .string()
@@ -54,7 +58,7 @@ const rawEnv = {
   walletConnectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID ?? "",
   agentApiUrl: process.env.NEXT_PUBLIC_AGENT_API_URL ?? "http://localhost:8080",
   apiUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081",
-  chainId: process.env.NEXT_PUBLIC_CHAIN_ID ?? String(BASE_SEPOLIA_CHAIN_ID),
+  chainId: process.env.NEXT_PUBLIC_CHAIN_ID ?? String(EXPECTED_CHAIN_ID),
   deployBlock: process.env.NEXT_PUBLIC_DEPLOY_BLOCK || undefined,
   rpcUrl: process.env.NEXT_PUBLIC_RPC_URL || undefined,
 };
@@ -77,7 +81,7 @@ export const env: ClientEnv = parsed.success
       apiUrl: /^https?:\/\//.test(rawEnv.apiUrl)
         ? rawEnv.apiUrl
         : "http://localhost:8081",
-      chainId: Number(rawEnv.chainId) || BASE_SEPOLIA_CHAIN_ID,
+      chainId: Number(rawEnv.chainId) || EXPECTED_CHAIN_ID,
       deployBlock: undefined,
       rpcUrl: undefined,
     };
@@ -96,5 +100,5 @@ export const envIssues: readonly EnvIssue[] = parsed.success
 
 export const isEnvValid = parsed.success;
 
-/** True when the configured chain does not match Base Sepolia. */
-export const isUnexpectedChain = env.chainId !== BASE_SEPOLIA_CHAIN_ID;
+/** True when the configured chain does not match the expected network. */
+export const isUnexpectedChain = env.chainId !== EXPECTED_CHAIN_ID;

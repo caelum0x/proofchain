@@ -5,8 +5,8 @@ import { useAccount, useSwitchChain } from "wagmi";
 import { APP_CHAIN_ID, appChain } from "@/lib/wagmi";
 
 /**
- * Base Sepolia network guard. Reports whether the connected wallet is on the
- * wrong chain and exposes a one-click switch prompt.
+ * Ethereum Sepolia network guard. Reports whether the connected wallet is on
+ * the wrong chain and exposes a one-click switch prompt.
  */
 export function useNetworkGuard() {
   const { isConnected, chainId } = useAccount();

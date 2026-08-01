@@ -18,7 +18,7 @@ import {
 import {
   ABIS,
   CONTRACT_NAMES,
-  createBaseSepoliaChain,
+  chainForId,
   tryGetContractAddress,
   type ContractName,
 } from '@proofchain/shared';
@@ -57,22 +57,22 @@ export interface ChainReader {
 
 /**
  * Build the chain reader from validated config. The RPC URL is injected into the
- * shared Base Sepolia chain definition so explorer/multicall metadata stays
- * correct while the transport points at the operator's endpoint.
+ * shared chain definition (Ethereum Sepolia by default) so explorer/multicall
+ * metadata stays correct while the transport points at the operator's endpoint.
  */
 export const createChainReader = (
   config: ApiConfig,
   logger: Logger,
 ): ChainReader => {
-  const chain = createBaseSepoliaChain(config.BASE_SEPOLIA_RPC_URL);
+  const chain = chainForId(config.CHAIN_ID, config.BASE_SEPOLIA_RPC_URL);
   const client: PublicClient = createPublicClient({
     chain,
     transport: http(config.BASE_SEPOLIA_RPC_URL),
   });
 
-  // The API targets a single chain (Base Sepolia); shared defaults the chainId.
+  // Resolve addresses for the configured chain (defaults to Ethereum Sepolia).
   const addressOf = (name: ContractName): Address | undefined =>
-    tryGetContractAddress(name);
+    tryGetContractAddress(name, config.CHAIN_ID);
 
   const abiOf = (name: ContractName): Abi | undefined => ABIS[name];
 

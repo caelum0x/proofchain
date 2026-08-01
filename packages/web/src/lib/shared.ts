@@ -17,15 +17,16 @@ import { CONTRACTS } from "@proofchain/shared";
 // Verdict types shared between the agent output and this UI.
 import type { VerificationVerdict, Finding } from "@proofchain/shared";
 
-import { env, BASE_SEPOLIA_CHAIN_ID } from "./env";
+import { env, BASE_SEPOLIA_CHAIN_ID, ETHEREUM_SEPOLIA_CHAIN_ID } from "./env";
 import {
   ALL_CONTRACT_NAMES,
   isContractName,
   type ContractName as PlatformContractName,
 } from "./contract-names";
-// Bundled Base-Sepolia deployment manifest (mirrors
-// packages/contracts/deployments/base-sepolia.json). Refresh via
-// scripts/gen-abis.sh. A flat { ContractName: address } map.
+// Bundled deployment manifests (mirror packages/contracts/deployments/*.json).
+// Refresh via scripts/gen-abis.sh. Each is a { ContractName: address } map that
+// may also carry a numeric `chainId` metadata key (ignored during parsing).
+import ethereumSepoliaDeployment from "./deployments/sepolia.json";
 import baseSepoliaDeployment from "./deployments/base-sepolia.json";
 
 export type { VerificationVerdict, Finding };
@@ -109,7 +110,10 @@ export const areCoreContractsDeployed =
 /** All resolved platform addresses, keyed by canonical contract name. */
 export type AllContractAddresses = Readonly<Partial<Record<PlatformContractName, Address>>>;
 
-const manifestSchema = z.record(z.string(), z.string());
+// Tolerant schema: values may be non-strings (e.g. a numeric `chainId` metadata
+// key). We accept the whole object and filter to valid string addresses below,
+// so a stray metadata field never discards the entire manifest.
+const manifestSchema = z.record(z.string(), z.unknown());
 
 /** Parse + checksum the bundled manifest into a validated name→address map. */
 function parseManifest(raw: unknown): Partial<Record<PlatformContractName, Address>> {
@@ -118,7 +122,7 @@ function parseManifest(raw: unknown): Partial<Record<PlatformContractName, Addre
   const out: Partial<Record<PlatformContractName, Address>> = {};
   for (const [key, value] of Object.entries(parsed.data)) {
     if (!isContractName(key)) continue;
-    if (!isAddress(value)) continue;
+    if (typeof value !== "string" || !isAddress(value)) continue;
     const checksummed = getAddress(value);
     if (checksummed === zeroAddress) continue;
     out[key] = checksummed;
@@ -137,7 +141,11 @@ export function resolveAllContractAddresses(
   chainId: number = env.chainId,
 ): AllContractAddresses {
   const fromManifest =
-    chainId === BASE_SEPOLIA_CHAIN_ID ? parseManifest(baseSepoliaDeployment) : {};
+    chainId === ETHEREUM_SEPOLIA_CHAIN_ID
+      ? parseManifest(ethereumSepoliaDeployment)
+      : chainId === BASE_SEPOLIA_CHAIN_ID
+        ? parseManifest(baseSepoliaDeployment)
+        : {};
 
   const core = resolveContractAddresses(chainId);
   const coreByName: Partial<Record<PlatformContractName, Address>> = {

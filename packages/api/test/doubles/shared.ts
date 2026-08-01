@@ -74,3 +74,20 @@ export const createBaseSepoliaChain = (_rpcUrl?: string): Chain => ({
   },
   testnet: true,
 });
+
+const ethereumSepolia: Chain = {
+  id: 11_155_111,
+  name: 'Sepolia',
+  nativeCurrency: { name: 'Sepolia Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: { default: { http: ['https://ethereum-sepolia-rpc.publicnode.com'] } },
+  blockExplorers: {
+    default: { name: 'Etherscan', url: 'https://sepolia.etherscan.io' },
+  },
+  testnet: true,
+};
+
+export const chainForId = (chainId?: number, rpcUrl?: string): Chain => {
+  const base = chainId === 84_532 ? createBaseSepoliaChain() : ethereumSepolia;
+  if (rpcUrl === undefined) return base;
+  return { ...base, rpcUrls: { ...base.rpcUrls, default: { http: [rpcUrl] } } };
+};

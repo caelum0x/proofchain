@@ -21,13 +21,26 @@ export {
 
 // Chain config
 export {
+  BASE_SEPOLIA_CHAIN_ID,
   CHAIN_ID,
+  CHAIN_ID_ENV,
   DEFAULT_BASE_SEPOLIA_RPC,
+  DEFAULT_CHAIN_ID,
+  DEFAULT_ETHEREUM_SEPOLIA_RPC,
+  ETHEREUM_SEPOLIA_CHAIN_ID,
+  ETHEREUM_SEPOLIA_RPC_URL_ENV,
+  PUBLIC_CHAIN_ID_ENV,
   RPC_URL_ENV,
+  SUPPORTED_CHAIN_IDS,
+  activeChain,
   baseSepolia,
+  chainForId,
   createBaseSepoliaChain,
+  createEthereumSepoliaChain,
+  ethereumSepolia,
   isSupportedChainId,
   readEnv,
+  resolveChainId,
   type ChainId,
 } from "./chains";
 
@@ -35,12 +48,14 @@ export {
 export {
   CONTRACTS,
   DEFAULT_DEPLOYMENTS_PATH,
+  DEFAULT_DEPLOYMENTS_PATHS,
   DEPLOYMENTS_PATH_ENV,
   addressesFromManifest,
   envOverridesFor,
   getContractAddress,
   parseAddress,
   readDeploymentManifest,
+  readDeploymentManifestForChain,
   resolveContractAddresses,
   toScreamingSnakeCase,
   tryGetContractAddress,

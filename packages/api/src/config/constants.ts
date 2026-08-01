@@ -3,7 +3,7 @@
  * never hardcoded inline. All are overridable via environment (see env.ts).
  */
 
-export const CHAIN_ID_DEFAULT = 84_532; // Base Sepolia
+export const CHAIN_ID_DEFAULT = 11_155_111; // Ethereum Sepolia
 
 export const DEFAULT_API_PORT = 8081;
 export const DEFAULT_HOST = '0.0.0.0';

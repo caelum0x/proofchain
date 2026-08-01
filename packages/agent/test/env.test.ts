@@ -11,7 +11,7 @@ const REQUIRED = {
 describe('loadConfig', () => {
   it('loads with defaults when only required vars are present', () => {
     const config = loadConfig(REQUIRED);
-    expect(config.CHAIN_ID).toBe(84_532);
+    expect(config.CHAIN_ID).toBe(11_155_111);
     expect(config.PASS_THRESHOLD_BPS).toBe(7_000);
     expect(config.SETTLE_ON_ATTEST).toBe(false);
     expect(config.PORT).toBe(8_080);
