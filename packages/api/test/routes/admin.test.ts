@@ -36,7 +36,7 @@ describe('admin router', () => {
     const app = await buildApp(adminPlugin, { db: makeDb() });
     const res = await app.inject({ method: 'GET', url: '/admin/config' });
     const data = res.json().data;
-    expect(data.chainId).toBe(84_532);
+    expect(data.chainId).toBe(11_155_111);
     expect(data.supabaseConfigured).toBe(false);
     expect(JSON.stringify(data)).not.toContain('SERVICE_ROLE');
     await app.close();

@@ -26,7 +26,7 @@ export function NetworkGuard({ children, requireConnection = true, connectFallba
       connectFallback ?? (
         <EmptyState
           title="Connect your wallet"
-          description="Connect a wallet to continue on Base Sepolia."
+          description="Connect a wallet to continue on Ethereum Sepolia."
           action={<ConnectButton />}
         />
       )

@@ -5,7 +5,7 @@ import { Button } from "./ui/Button";
 
 /**
  * Sticky warning shown when the connected wallet is on the wrong chain.
- * Offers a one-click switch to Base Sepolia.
+ * Offers a one-click switch to Ethereum Sepolia.
  */
 export function NetworkBanner() {
   const { wrongNetwork, promptSwitch, isSwitching, targetChainName } = useNetworkGuard();

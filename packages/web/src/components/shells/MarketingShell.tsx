@@ -60,7 +60,7 @@ export function MarketingShell({ children, contained = true, className }: Market
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-2 px-4 py-8 text-xs text-muted sm:flex-row sm:items-center">
-          <p>ProofChain · Base Sepolia · Never share private keys. This dApp signs only in your wallet.</p>
+          <p>ProofChain · Ethereum Sepolia · Never share private keys. This dApp signs only in your wallet.</p>
           <div className="flex gap-4">
             <Link href="/docs" className="hover:text-fg">Docs</Link>
             <Link href="/explorer" className="hover:text-fg">Explorer</Link>

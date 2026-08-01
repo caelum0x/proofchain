@@ -222,7 +222,7 @@ describe('GET /health', () => {
     const res = await app.inject({ method: 'GET', url: '/health' });
     expect(res.statusCode).toBe(200);
     expect(res.json().data.status).toBe('ok');
-    expect(res.json().data.chainId).toBe(84_532);
+    expect(res.json().data.chainId).toBe(11_155_111);
   });
 
   it('reports degraded (503) when the chain read fails', async () => {

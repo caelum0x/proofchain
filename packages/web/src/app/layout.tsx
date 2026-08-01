@@ -9,7 +9,7 @@ import { themeInitScript } from "@/components/ui/theme";
 export const metadata: Metadata = {
   title: "ProofChain — AI-verified provenance",
   description:
-    "AI-verified supply-chain provenance with autonomous on-chain settlement on Base Sepolia.",
+    "AI-verified supply-chain provenance with autonomous on-chain settlement on Ethereum Sepolia.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

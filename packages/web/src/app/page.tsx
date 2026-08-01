@@ -9,7 +9,7 @@ import { LiveStats } from "@/components/LiveStats";
 export const metadata: Metadata = {
   title: "ProofChain — AI-verified provenance & supply-chain finance",
   description:
-    "AI-verified provenance, autonomous on-chain settlement, and supply-chain finance on Base Sepolia.",
+    "AI-verified provenance, autonomous on-chain settlement, and supply-chain finance on Ethereum Sepolia.",
 };
 
 const HOW_IT_WORKS = [
@@ -50,7 +50,7 @@ export default function HomePage() {
       {/* Hero */}
       <section className="space-y-5">
         <StatusBadge status="success" dot>
-          Base Sepolia · Industrial 5.0 supply-chain finance
+          Ethereum Sepolia · Industrial 5.0 supply-chain finance
         </StatusBadge>
         <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-fg sm:text-5xl">
           AI-verified provenance, autonomous settlement, and on-chain supply-chain finance.

@@ -69,13 +69,26 @@ function normalize(addr?: Address): Address | undefined {
  * missing or placeholder deployment (returns undefined per field) so the UI can
  * render an actionable "not deployed" state instead of crashing.
  */
+/** The bundled deployment manifest for a chain (works in the browser bundle). */
+function bundledManifestFor(chainId: number): unknown {
+  if (chainId === ETHEREUM_SEPOLIA_CHAIN_ID) return ethereumSepoliaDeployment;
+  if (chainId === BASE_SEPOLIA_CHAIN_ID) return baseSepoliaDeployment;
+  return {};
+}
+
 export function resolveContractAddresses(
   chainId: number = env.chainId,
 ): ContractAddresses {
-  // `CONTRACTS` shape is owned by shared; validate defensively rather than
-  // trusting its compile-time type across the package boundary.
+  // `CONTRACTS` (owned by shared) resolves via a filesystem read, which is empty
+  // in the browser bundle — so we layer the bundled manifest underneath as the
+  // reliable client-side source, with shared's values winning on top.
   const map = CONTRACTS as unknown as Record<string, unknown>;
-  const forChain = map[String(chainId)] ?? map[chainId as unknown as string];
+  const fromShared = map[String(chainId)] ?? map[chainId as unknown as string];
+  const bundled = bundledManifestFor(chainId);
+  const forChain = {
+    ...(typeof bundled === "object" && bundled ? bundled : {}),
+    ...(typeof fromShared === "object" && fromShared ? fromShared : {}),
+  };
 
   const parsed = contractSetSchema.safeParse(forChain ?? {});
   if (!parsed.success) {

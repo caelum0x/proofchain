@@ -14,7 +14,7 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 
 const STEPS: readonly Step[] = [
   { label: "Connect wallet", description: "Sign in with your wallet" },
-  { label: "Select network", description: `Base Sepolia (${env.chainId})` },
+  { label: "Select network", description: `Ethereum Sepolia (${env.chainId})` },
   { label: "Get testnet funds", description: "Faucet ETH + USDC" },
   { label: "Register & explore", description: "Create batches, settle, finance" },
 ];
@@ -55,7 +55,7 @@ export function OnboardingFlow() {
           Onboard to ProofChain in four steps
         </h1>
         <p className="max-w-2xl text-lg text-muted">
-          Connect a wallet on Base Sepolia, grab testnet funds, then register provenance and settle
+          Connect a wallet on Ethereum Sepolia, grab testnet funds, then register provenance and settle
           on-chain. It takes a couple of minutes.
         </p>
       </header>
@@ -105,14 +105,14 @@ export function OnboardingFlow() {
             </span>
             <div>
               <h2 className="text-base font-semibold text-fg">2 · Get testnet funds</h2>
-              <p className="text-sm text-muted">You need a little Base Sepolia ETH for gas, plus test USDC.</p>
+              <p className="text-sm text-muted">You need a little Ethereum Sepolia ETH for gas, plus test USDC.</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <a href="https://www.alchemy.com/faucets/base-sepolia" target="_blank" rel="noopener noreferrer">
               <Button variant="secondary" size="sm">
                 <Icon name="external" size={16} />
-                Base Sepolia ETH faucet
+                Ethereum Sepolia ETH faucet
               </Button>
             </a>
             <Link href="/treasury">
@@ -122,7 +122,7 @@ export function OnboardingFlow() {
             </Link>
           </div>
           <Callout tone="info">
-            Base Sepolia is a testnet — funds have no real value and are safe to experiment with.
+            Ethereum Sepolia is a testnet — funds have no real value and are safe to experiment with.
           </Callout>
         </Card>
       </section>

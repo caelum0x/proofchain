@@ -24,9 +24,9 @@ const CONCEPTS: readonly Concept[] = [
 ];
 
 const FAQ: readonly AccordionItem[] = [
-  { id: "network", title: "Which network does ProofChain run on?", content: `ProofChain runs on Base Sepolia (chain ${env.chainId}). It is a testnet, so funds have no real value.` },
+  { id: "network", title: "Which network does ProofChain run on?", content: `ProofChain runs on Ethereum Sepolia (chain ${env.chainId}). It is a testnet, so funds have no real value.` },
   { id: "wallet", title: "Do I need to share my private key?", content: "Never. The dApp only requests signatures through your wallet. No page ever sees your private key." },
-  { id: "cost", title: "Does it cost anything?", content: "Only testnet gas, which you can get for free from a Base Sepolia faucet linked in onboarding." },
+  { id: "cost", title: "Does it cost anything?", content: "Only testnet gas, which you can get for free from a Ethereum Sepolia faucet linked in onboarding." },
   { id: "data", title: "Where does the data come from?", content: "Reads come from the ProofChain API (aggregates) and directly from contract events via your RPC for freshness." },
 ];
 
@@ -96,7 +96,7 @@ Protocol → release / refund (SettlementEscrow)`;
       content: (
         <div className="space-y-6">
           <p className="max-w-2xl text-muted">
-            Core contracts are deployed on Base Sepolia. Live addresses are resolved from your
+            Core contracts are deployed on Ethereum Sepolia. Live addresses are resolved from your
             environment and shown across the app (for example on the Admin address book).
           </p>
           <div className="flex flex-wrap gap-2">

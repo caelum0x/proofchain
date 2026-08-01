@@ -13,6 +13,26 @@ Built for **ChainHack 2026 / NeuralLedger 5.0** — Industrial 5.0 with AI × We
 
 ---
 
+## 🔗 Live deployment & demo
+
+**Live on Ethereum Sepolia** (chainId `11155111`) — **117 contracts deployed** and a full
+end-to-end verified on-chain (register → attest → fund → settle → Released). Full address
+list + Etherscan links: **[`docs/DEPLOYMENTS.md`](docs/DEPLOYMENTS.md)**.
+
+📹 **Product walkthrough:** [`docs/media/walkthrough.mp4`](docs/media/walkthrough.mp4)
+
+| Landing | Verifier dashboard |
+|---|---|
+| ![Landing](docs/media/01-landing.png) | ![Verifier](docs/media/03-verifier.png) |
+| **Invoice financing marketplace** | **EU Digital Product Passport** |
+| ![Finance](docs/media/05-finance-marketplace.png) | ![DPP](docs/media/06-digital-product-passport.png) |
+| **Analytics dashboard** | **Governance** |
+| ![Dashboard](docs/media/02-dashboard.png) | ![Governance](docs/media/08-governance.png) |
+
+More screens in [`docs/media/`](docs/media/) (explorer, marketplace, ESG, insurance, logistics, suppliers).
+
+---
+
 ## Why it matters (Industrial 5.0)
 
 Global supply chains lose enormous value to document fraud, opaque provenance, slow

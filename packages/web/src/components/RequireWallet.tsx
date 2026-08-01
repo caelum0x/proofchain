@@ -18,7 +18,7 @@ export function RequireWallet({ children }: { children: ReactNode }) {
     return (
       <EmptyState
         title="Connect your wallet"
-        description="Connect a wallet to interact with ProofChain contracts on Base Sepolia."
+        description="Connect a wallet to interact with ProofChain contracts on Ethereum Sepolia."
         action={<ConnectButton />}
       />
     );
